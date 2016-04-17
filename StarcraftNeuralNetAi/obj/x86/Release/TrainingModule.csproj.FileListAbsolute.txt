@@ -9,7 +9,7 @@ E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\bin\x86\Release\Networ
 E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\bin\x86\Release\NetworkTrainingModule.dll
 E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\bin\x86\Release\NetworkTrainingModule.pdb
 E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\bin\x86\Release\Broodwar.dll
-E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\bin\x86\Release\encog-core-cs.dll
-E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\obj\x86\Release\TrainingModule.csprojResolveAssemblyReference.cache
 E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\obj\x86\Release\NetworkTrainingModule.dll
 E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\obj\x86\Release\NetworkTrainingModule.pdb
+E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\bin\x86\Release\encog-core-cs.dll
+E:\Repositories\StarcraftNeuralNetAi\StarcraftNeuralNetAi\obj\x86\Release\TrainingModule.csprojResolveAssemblyReference.cache
