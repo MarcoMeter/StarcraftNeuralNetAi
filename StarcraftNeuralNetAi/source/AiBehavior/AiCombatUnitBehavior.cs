@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using BroodWar;
+﻿using BroodWar;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
 

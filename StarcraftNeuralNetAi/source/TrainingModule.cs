@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using BroodWar;
+﻿using BroodWar;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
 
@@ -15,51 +12,68 @@ namespace NetworkTraining
     {
         #region Member
         SquadSupervisor supervisor;
-        TilePosition redPlayerStart = new TilePosition(28,13);
-        TilePosition bluePlayerStart = new TilePosition(29, 45);
+        Position redPlayerStart = Utility.ConvertTilePosition(new TilePosition(28, 13));
+        Position bluePlayerStart = Utility.ConvertTilePosition(new TilePosition(29, 45));
+        bool isEnemySquadInitialized = false;
         #endregion
 
         #region Events
+        /// <summary>
+        /// Everything that needs to be done before the game starts, should be done inside OnStart()
+        /// </summary>
         public override void OnStart()
         {
-            Game.Write("Training module online");
-            Game.SetLocalSpeed(0);
-            Game.EnableFlag(Flag.CompleteMapInformation);
-            Game.Write("Match config done");
-            InitializeSquad();
-            Game.Write("Squad initialized");
+            Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
+            Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
+            InitializeSquad(); // instantiate the SquadSupervisor and its units
         }
 
+        /// <summary>
+        /// OnFrame() is called every single frame. Avoid expensive looping code.
+        /// </summary>
         public override void OnFrame()
         {
-            supervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
+            if(!isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count)
+            {
+                InitializeEnemySquad();
+                isEnemySquadInitialized = true;
+                // new ForceAttack test
+                //supervisor.ForceAttack();
+            }
 
-            if (Game.Self.Color == Color.Red)
-            {
-                supervisor.ForceAttack(bluePlayerStart);
-            }
-            else
-            {
-                supervisor.ForceAttack(redPlayerStart);
-            }
+            supervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
         }
+
         #endregion
 
         #region local functions
         /// <summary>
-        /// 
+        /// Creates an instance of the SquadSupervisor. Initializes the list of combat units.
         /// </summary>
         private void InitializeSquad()
         {
             supervisor = SquadSupervisor.GetInstance();
-            foreach(Unit unit in Game.Self.Units)
+            foreach(Unit unit in Game.AllUnits)
             {
-                if(unit.UnitType.Type == BroodWar.Api.Enum.UnitType.Terran_Marine)
+                if(unit.Player == Game.Self)
                 {
                     supervisor.AddCombatUnit(new AiCombatUnitBehavior(unit, supervisor));
                 }
             }
-            Game.Write("Army count: " + supervisor.GetSquadCount());
+        }
+
+        /// <summary>
+        /// Initializes the list of enemy combat units. This should be called as soon as the Game object is aware of the complete map information.
+        /// </summary>
+        private void InitializeEnemySquad()
+        {
+            foreach (Unit unit in Game.AllUnits)
+            {
+                if (unit.Player != Game.Self)
+                {
+                    supervisor.AddEnemyCombatUnit(unit);
+                }
+            }
         }
         #endregion
 
