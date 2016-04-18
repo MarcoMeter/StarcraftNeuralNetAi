@@ -63,6 +63,7 @@
     <Compile Include="source\AiBehavior\AiCombatUnitBehavior.cs" />
     <Compile Include="source\AiBehavior\SquadSupervisor.cs" />
     <Compile Include="source\Enum\CombatUnitState.cs" />
+    <Compile Include="source\NeuralNet\InputInformation.cs" />
     <Compile Include="source\TrainingModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="source\Util\FileLogUtil.cs" />

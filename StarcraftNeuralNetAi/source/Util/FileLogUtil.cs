@@ -8,7 +8,7 @@ namespace NetworkTraining
         private static string path = @"bwapi-data\AI\cs\logFile" + Game.Self.Id.ToString() + ".txt";
         
         /// <summary>
-        /// Write line to logFile.txt
+        /// Write line to logFile.log
         /// </summary>
         /// <param name="line"></param>
         public static void WriteLine(string line)

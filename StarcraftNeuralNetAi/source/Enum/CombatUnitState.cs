@@ -2,13 +2,14 @@
 {
     public enum CombatUnitState
     {
-        Idle,
+        SquadState,
         AttackClosest,
         AttackFastest,
         AttackMostValueable,
         AttackWeakest,
         MoveTowards,
         MoveBack,
+        UseStimpack,
         Seek,
         Retreat
     };

@@ -11,7 +11,7 @@ namespace NetworkTraining
     public class TrainingModule : AiBase
     {
         #region Member
-        SquadSupervisor supervisor;
+        SquadSupervisor squadSupervisor;
         Position redPlayerStart = Utility.ConvertTilePosition(new TilePosition(28, 13));
         Position bluePlayerStart = Utility.ConvertTilePosition(new TilePosition(29, 45));
         bool isEnemySquadInitialized = false;
@@ -38,26 +38,35 @@ namespace NetworkTraining
                 InitializeEnemySquad();
                 isEnemySquadInitialized = true;
                 // new ForceAttack test
-                //supervisor.ForceAttack();
+                //squadSupervisor.ForceAttack(); // 10 vs 10
+                squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies
             }
 
-            supervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
+            squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
         }
 
+        /// <summary>
+        /// OnUnitDestroy is triggered if any unit dies or gets destroyed. Keep in mind, destroyed units can still be referenced.
+        /// </summary>
+        /// <param name="unit"></param>
+        public override void OnUnitDestroy(Unit unit)
+        {
+            squadSupervisor.OnUnitDestroy(unit); // pass event to the SquadSupervisor
+        }
         #endregion
 
-        #region local functions
+        #region Local Functions
         /// <summary>
         /// Creates an instance of the SquadSupervisor. Initializes the list of combat units.
         /// </summary>
         private void InitializeSquad()
         {
-            supervisor = SquadSupervisor.GetInstance();
+            squadSupervisor = SquadSupervisor.GetInstance();
             foreach(Unit unit in Game.AllUnits)
             {
                 if(unit.Player == Game.Self)
                 {
-                    supervisor.AddCombatUnit(new AiCombatUnitBehavior(unit, supervisor));
+                    squadSupervisor.AddCombatUnit(new AiCombatUnitBehavior(unit, squadSupervisor));
                 }
             }
         }
@@ -71,13 +80,13 @@ namespace NetworkTraining
             {
                 if (unit.Player != Game.Self)
                 {
-                    supervisor.AddEnemyCombatUnit(unit);
+                    squadSupervisor.AddEnemyCombatUnit(unit);
                 }
             }
         }
         #endregion
 
-        #region public functions
+        #region Public Functions
 
         #endregion
     }

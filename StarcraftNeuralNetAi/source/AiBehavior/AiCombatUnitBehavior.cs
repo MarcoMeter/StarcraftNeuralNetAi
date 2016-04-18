@@ -8,15 +8,15 @@ namespace NetworkTraining
     {
         #region Member
         private Unit unit;
-        private SquadSupervisor supervisor;
-        private CombatUnitState currentState = CombatUnitState.Idle;
+        private SquadSupervisor squadSupervisor;
+        private CombatUnitState currentState = CombatUnitState.SquadState;
         #endregion
 
         #region Constructor
         public AiCombatUnitBehavior(Unit unit, SquadSupervisor supervisor)
         {
             this.unit = unit;
-            this.supervisor = supervisor;
+            this.squadSupervisor = supervisor;
         }
         #endregion
 
@@ -29,7 +29,7 @@ namespace NetworkTraining
 
         public SquadSupervisor GetSupervisor()
         {
-            return this.supervisor;
+            return this.squadSupervisor;
         }
 
         public CombatUnitState GetCurrentState()
@@ -50,14 +50,18 @@ namespace NetworkTraining
         /// </summary>
         public void OnFrame()
         {
+            InputInformation inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
+            
+
+
             // state decision
             // neural net stuff
             
             // state execution
             switch(currentState)
             {
-                case CombatUnitState.Idle:
-                    Idle();
+                case CombatUnitState.SquadState:
+                    SquadState();
                     break;
                 case CombatUnitState.AttackClosest:
                     AttackClosest();
@@ -77,6 +81,9 @@ namespace NetworkTraining
                 case CombatUnitState.MoveBack:
                     MoveBack();
                     break;
+                case CombatUnitState.UseStimpack:
+                    UseStimpack();
+                    break;
                 case CombatUnitState.Seek:
                     Seek();
                     break;
@@ -91,7 +98,7 @@ namespace NetworkTraining
         /// <summary>
         /// The initial state is idle. Basically the combat unit will wait for the neural net to take over which is commanded by the SquadSupervisor.
         /// </summary>
-        private void Idle()
+        private void SquadState()
         {
 
         }
@@ -140,6 +147,14 @@ namespace NetworkTraining
         /// Back up from enemy.
         /// </summary>
         private void MoveBack()
+        {
+
+        }
+
+        /// <summary>
+        /// Use stimpack.
+        /// </summary>
+        private void UseStimpack()
         {
 
         }
