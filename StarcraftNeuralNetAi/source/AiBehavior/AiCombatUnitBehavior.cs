@@ -20,7 +20,7 @@ namespace NetworkTraining
         }
         #endregion
 
-        #region public functions
+        #region Public Functions
         // Getter
         public Unit GetUnit()
         {

@@ -24,6 +24,7 @@ namespace NetworkTraining
         public override void OnStart()
         {
             Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
+            //Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
             Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
             InitializeSquad(); // instantiate the SquadSupervisor and its units
         }
