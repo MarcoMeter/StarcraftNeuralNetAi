@@ -12,21 +12,25 @@ namespace NetworkTraining
     {
         #region Member
         SquadSupervisor squadSupervisor;
-        Position redPlayerStart = Utility.ConvertTilePosition(new TilePosition(28, 13));
-        Position bluePlayerStart = Utility.ConvertTilePosition(new TilePosition(29, 45));
-        bool isEnemySquadInitialized = false;
+        bool isEnemySquadInitialized;
         #endregion
 
         #region Events
         /// <summary>
-        /// Everything that needs to be done before the game starts, should be done inside OnStart()
+        /// Everything that needs to be done before the game starts, should be done inside OnStart(). Especially all members should be initialized in here due to automated matches.
         /// </summary>
         public override void OnStart()
         {
+            // Config match
             Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
             //Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
             Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
-            InitializeSquad(); // instantiate the SquadSupervisor and its units
+
+            // Initialize Member
+            isEnemySquadInitialized = false;
+            squadSupervisor = new SquadSupervisor();
+
+            InitializeSquad();
         }
 
         /// <summary>
@@ -34,13 +38,14 @@ namespace NetworkTraining
         /// </summary>
         public override void OnFrame()
         {
-            if(!isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count)
+            if (!isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count)
             {
-                InitializeEnemySquad();
+                InitializeEnemySquad(); // the enemy squad has to be initialized on the first frame, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
                 isEnemySquadInitialized = true;
-                // new ForceAttack test
-                //squadSupervisor.ForceAttack(); // 10 vs 10
-                squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies
+                
+                // Some test calls to engage a fight
+                //squadSupervisor.ForceAttack(); // 10 vs 10 -> Test
+                squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies -> Test
             }
 
             squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
@@ -49,7 +54,7 @@ namespace NetworkTraining
         /// <summary>
         /// OnUnitDestroy is triggered if any unit dies or gets destroyed. Keep in mind, destroyed units can still be referenced.
         /// </summary>
-        /// <param name="unit"></param>
+        /// <param name="unit">Is triggered on any kind of unit which is being destroyed.</param>
         public override void OnUnitDestroy(Unit unit)
         {
             squadSupervisor.OnUnitDestroy(unit); // pass event to the SquadSupervisor
@@ -58,11 +63,10 @@ namespace NetworkTraining
 
         #region Local Functions
         /// <summary>
-        /// Creates an instance of the SquadSupervisor. Initializes the list of combat units.
+        /// Initializes the units commanded by the SquadSupervisor.
         /// </summary>
         private void InitializeSquad()
         {
-            squadSupervisor = SquadSupervisor.GetInstance();
             foreach(Unit unit in Game.AllUnits)
             {
                 if(unit.Player == Game.Self)

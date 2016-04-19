@@ -4,15 +4,27 @@ using BroodWar.Api.Enum;
 
 namespace NetworkTraining
 {
+    /// <summary>
+    /// Each controlled combat unit should come with an AiCombatUnitBehavior in order to attach a neural net behavior to that combat unit.
+    /// </summary>
     public class AiCombatUnitBehavior
     {
         #region Member
         private Unit unit;
         private SquadSupervisor squadSupervisor;
         private CombatUnitState currentState = CombatUnitState.SquadState;
+        // TODO local input information
+        private double weaponDamage;
+        private double weaponCooldown;
+        private double movementSpeed;
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Create an instance of the AiCombatBehavior.
+        /// </summary>
+        /// <param name="unit">The individual combat unit which needs to be pared with this behavior.</param>
+        /// <param name="supervisor">The SquadSupervisor which controlls the combat unit.</param>
         public AiCombatUnitBehavior(Unit unit, SquadSupervisor supervisor)
         {
             this.unit = unit;
@@ -51,14 +63,15 @@ namespace NetworkTraining
         public void OnFrame()
         {
             InputInformation inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
-            
 
+            // TODO local input information
 
             // state decision
+
             // neural net stuff
-            
+
             // state execution
-            switch(currentState)
+            switch (currentState)
             {
                 case CombatUnitState.SquadState:
                     SquadState();

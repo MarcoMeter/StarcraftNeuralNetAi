@@ -11,14 +11,13 @@ namespace NetworkTraining
     public class SquadSupervisor
     {
         #region Member
-        private static SquadSupervisor instance;
         private List<AiCombatUnitBehavior> combatUnits = new List<AiCombatUnitBehavior>();
         private List<Unit> enemyCombatUnits = new List<Unit>();
         private InputInformation globalInputInfo;
         #endregion
 
         #region Constructor
-        private SquadSupervisor()
+        public SquadSupervisor()
         {
 
         }
@@ -26,31 +25,27 @@ namespace NetworkTraining
 
         #region Public Functions
         /// <summary>
-        /// If there is no instance, the supervisor will be instantiated.
+        /// Add owned combat units to the list of the SquadSupervisor.
         /// </summary>
-        /// <returns>The only instance of the SquadSupervisor will be returned</returns>
-        public static SquadSupervisor GetInstance()
-        {
-            if(instance == null)
-            {
-                instance = new SquadSupervisor();
-            }
-            return instance;
-        }
-
+        /// <param name="unit">friendly combat units</param>
         public void AddCombatUnit(AiCombatUnitBehavior unit)
         {
             combatUnits.Add(unit);
         }
 
+        /// <summary>
+        /// Add not owned combat units to the list of the SquadSupervisor.
+        /// </summary>
+        /// <param name="unit">enemy combat units</param>
         public void AddEnemyCombatUnit(Unit unit)
         {
             enemyCombatUnits.Add(unit);
         }
 
         /// <summary>
-        /// This is just a test attack...
+        /// This is just a test attack towards some position.
         /// </summary>
+        /// <param name="targetPosition">Attack target position</param>
         public void ForceAttack(Position targetPosition)
         {
             foreach(AiCombatUnitBehavior unit in combatUnits)
@@ -60,7 +55,7 @@ namespace NetworkTraining
         }
 
         /// <summary>
-        /// This is just a test attack... this is hard coded for attacking 10 vs 10
+        /// This is just a test attack. It assigns one friendly combat unit to attack one enemy combat unit.
         /// </summary>
         public void ForceAttack()
         {
@@ -71,16 +66,28 @@ namespace NetworkTraining
         }
 
         // Getter
+        /// <summary>
+        /// Returns the count of all controlled combat units.
+        /// </summary>
+        /// <returns>Returns the count of controlled combat units.</returns>
         public int GetSquadCount()
         {
             return combatUnits.Count;
         }
 
+        /// <summary>
+        /// Returns the count of all enemy combat units.
+        /// </summary>
+        /// <returns>Returns the count of enemy combat units.</returns>
         public int GetEnemySquadCount()
         {
             return enemyCombatUnits.Count;
         }
 
+        /// <summary>
+        /// The SquadSupervisor provides global input information for the neural net, which is getting updated each frame.
+        /// </summary>
+        /// <returns>Global part of the input information for the neural net.</returns>
         public InputInformation GetGlobalInputInformation()
         {
             return this.globalInputInfo;
@@ -117,8 +124,8 @@ namespace NetworkTraining
         /// <summary>
         /// This function collects the global input information for the neural net.
         /// </summary>
-        /// <returns></returns>
-        InputInformation GatherRawInputData()
+        /// <returns>An incomplete InputInformation, which only consists of global input information, is returned.</returns>
+        private InputInformation GatherRawInputData()
         {
             int squadHP = 0;
             int enemyHP = 0;
