@@ -51,6 +51,8 @@ namespace NetworkTraining
             foreach(AiCombatUnitBehavior unit in combatUnits)
             {
                 unit.GetUnit().Attack(targetPosition, false);
+                // use stim pack
+                //unit.GetUnit().UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
             }
         }
 
@@ -109,12 +111,14 @@ namespace NetworkTraining
             {
                 combatUnit.OnFrame();
             }
+
+            FileLogUtil.WriteLine("Input Information : " + combatUnits[0].GetInputInformation().ToString());
         }
 
         /// <summary>
         /// OnUnitDestroy event which is passed down by the SquadSupervisor
         /// </summary>
-        public void OnUnitDestroy(Unit unit)
+        public void OnUnitDestroy(Unit destroyedUnit)
         {
 
         }
@@ -142,8 +146,8 @@ namespace NetworkTraining
                 enemyHP += unit.HitPoints;
             }
 
-            InputInformation info = new InputInformation(squadHP, combatUnits.Count, enemyHP, enemyCombatUnits.Count);
-
+            InputInformation info = new InputInformation(squadHP, Game.Self.Units.Count, enemyHP, Game.Enemy.Units.Count);
+            
             return info;
         }
         #endregion

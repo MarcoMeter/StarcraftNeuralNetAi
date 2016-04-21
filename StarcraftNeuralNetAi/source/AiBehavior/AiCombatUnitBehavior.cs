@@ -13,10 +13,7 @@ namespace NetworkTraining
         private Unit unit;
         private SquadSupervisor squadSupervisor;
         private CombatUnitState currentState = CombatUnitState.SquadState;
-        // TODO local input information
-        private double weaponDamage;
-        private double weaponCooldown;
-        private double movementSpeed;
+        private InputInformation inputInfo;
         #endregion
 
         #region Constructor
@@ -49,6 +46,11 @@ namespace NetworkTraining
             return this.currentState;
         }
 
+        public InputInformation GetInputInformation()
+        {
+            return this.inputInfo;
+        }
+
         // Setter
         public void ForceState(CombatUnitState state)
         {
@@ -62,12 +64,13 @@ namespace NetworkTraining
         /// </summary>
         public void OnFrame()
         {
-            InputInformation inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
+            inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
 
-            // TODO local input information
+            // Complete the inputInfo with local information
+            // Pure damage is not considered to be as an input, just because the damage is considered to be constant for now. Weapon cooldown is much more interesting due to stimpack and timing.
+            inputInfo.CompleteInputData(unit.HitPoints, unit.GroundWeaponCooldown, unit.VelocityX, unit.VelocityY, unit.IsStimmed);
 
             // state decision
-
             // neural net stuff
 
             // state execution

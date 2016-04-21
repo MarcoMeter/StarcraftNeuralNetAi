@@ -18,9 +18,10 @@ namespace NetworkTraining
         private int enemySquadCount;
         // Known by AiCobatUnitBehavior
         private int localHitPoints;
-        private double localDPS;
-        private double localMovementSpeed;
-        private bool localIsStimpackCooldown = false;
+        private int localWeaponCooldown;
+        private double velocityX;
+        private double velocityY;
+        private bool isStimmed = false;
         #endregion
 
         #region Constructor
@@ -46,16 +47,18 @@ namespace NetworkTraining
         /// <summary>
         /// After the SquadSupervisor initialized the global information, the individual AiCombatUnitBehavior has to add its local information in order to complete the InputInformation.
         /// </summary>
-        /// <param name="hitPoints"></param>
-        /// <param name="dps"></param>
-        /// <param name="movementSpeed"></param>
-        /// <param name="stimpack"></param>
-        public void CompleteInputData(int hitPoints, double dps, double movementSpeed, bool stimpack)
+        /// <param name="hitPoints">Remaining hit points of the combat unit.</param>
+        /// <param name="weaponCooldown">Remaining cooldown till next attack.</param>
+        /// <param name="velocityX">The speed of the combat unit on the x-axis.</param>
+        /// <param name="velocityY">The speed of the combat unit on the y-axis.</param>
+        /// <param name="isStimmed">Is the combat unit on the effect caused by the Stimpack?</param>
+        public void CompleteInputData(int hitPoints, int weaponCooldown, double velocityX, double velocityY, bool isStimmed)
         {
             this.localHitPoints = hitPoints;
-            this.localDPS = dps;
-            this.localMovementSpeed = movementSpeed;
-            this.localIsStimpackCooldown = stimpack;
+            this.localWeaponCooldown = weaponCooldown;
+            this.velocityX = velocityX;
+            this.velocityY = velocityY;
+            this.isStimmed = isStimmed;
         }
 
         // Getter
@@ -77,6 +80,12 @@ namespace NetworkTraining
         public int GetEnemySquadCount()
         {
             return this.enemySquadCount;
+        }
+
+        public override String ToString()
+        {
+            return "Squad hp : " + squadHitPoints + ", Squad count : " + squadCount + ", Enemy squad hp : " + enemySquadHitPoints + ", Enemy squad count : " + enemySquadCount +
+                ", Local hp : " + localHitPoints + ", Local cd : " + localWeaponCooldown + ", Local velocity : (" + velocityX + "/" + velocityY + "), Local isStimmed : " + isStimmed;
         }
         #endregion
 

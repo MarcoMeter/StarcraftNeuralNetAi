@@ -23,7 +23,7 @@ namespace NetworkTraining
         {
             // Config match
             Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
-            //Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
+            Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
             Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
 
             // Initialize Member
@@ -47,6 +47,8 @@ namespace NetworkTraining
                 //squadSupervisor.ForceAttack(); // 10 vs 10 -> Test
                 squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies -> Test
             }
+
+            Game.DrawTextScreen(5, 0, "Me/Enemy {0}/{1}", Game.Self.Units.Count, Game.Enemy.Units.Count);
 
             squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
         }
