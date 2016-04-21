@@ -111,8 +111,6 @@ namespace NetworkTraining
             {
                 combatUnit.OnFrame();
             }
-
-            FileLogUtil.WriteLine("Input Information : " + combatUnits[0].GetInputInformation().ToString());
         }
 
         /// <summary>

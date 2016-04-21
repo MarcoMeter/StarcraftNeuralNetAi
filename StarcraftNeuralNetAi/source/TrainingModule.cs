@@ -1,6 +1,11 @@
 ﻿using BroodWar;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
+using Encog.Engine.Network.Activation;
+using Encog.Neural.Networks;
+using Encog.Neural.Networks.Layers;
+using Encog.Persist;
+using System;
 
 namespace NetworkTraining
 {
@@ -31,6 +36,16 @@ namespace NetworkTraining
             squadSupervisor = new SquadSupervisor();
 
             InitializeSquad();
+
+            // Build and save a new Artificial Neural Network for testing purposes
+            BasicNetwork network = new BasicNetwork();
+            network.AddLayer(new BasicLayer(null, true, 9));
+            network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
+            network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
+            network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 8));
+            network.Structure.FinalizeStructure();
+            network.Reset();
+            EncogDirectoryPersistence.SaveObject(new System.IO.FileInfo("testNetwork.ann"), network);
         }
 
         /// <summary>

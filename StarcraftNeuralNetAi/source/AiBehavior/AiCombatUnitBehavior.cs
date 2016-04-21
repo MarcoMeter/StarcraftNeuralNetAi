@@ -1,6 +1,12 @@
 ﻿using BroodWar;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
+using Encog.ML.Data;
+using Encog.ML.Data.Basic;
+using Encog.Neural.Networks;
+using Encog.Persist;
+using System;
+using System.IO;
 
 namespace NetworkTraining
 {
@@ -14,6 +20,7 @@ namespace NetworkTraining
         private SquadSupervisor squadSupervisor;
         private CombatUnitState currentState = CombatUnitState.SquadState;
         private InputInformation inputInfo;
+        private BasicNetwork neuralNet;
         #endregion
 
         #region Constructor
@@ -26,6 +33,8 @@ namespace NetworkTraining
         {
             this.unit = unit;
             this.squadSupervisor = supervisor;
+            // Load the artificial neural network
+            this.neuralNet = (BasicNetwork)EncogDirectoryPersistence.LoadObject(new FileInfo("testNetwork.ann"));
         }
         #endregion
 
@@ -69,16 +78,15 @@ namespace NetworkTraining
             // Complete the inputInfo with local information
             // Pure damage is not considered to be as an input, just because the damage is considered to be constant for now. Weapon cooldown is much more interesting due to stimpack and timing.
             inputInfo.CompleteInputData(unit.HitPoints, unit.GroundWeaponCooldown, unit.VelocityX, unit.VelocityY, unit.IsStimmed);
+            double[] inputData = inputInfo.GetNormalizedData();
 
-            // state decision
-            // neural net stuff
+            // Use the neural net to classify the input information
+            CombatUnitState currentState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
+            Game.Write(currentState.ToString());
 
             // state execution
             switch (currentState)
             {
-                case CombatUnitState.SquadState:
-                    SquadState();
-                    break;
                 case CombatUnitState.AttackClosest:
                     AttackClosest();
                     break;
@@ -102,6 +110,9 @@ namespace NetworkTraining
                     break;
                 case CombatUnitState.Seek:
                     Seek();
+                    break;
+                case CombatUnitState.SquadState:
+                    SquadState();
                     break;
                 case CombatUnitState.Retreat:
                     Retreat();
@@ -156,7 +167,7 @@ namespace NetworkTraining
         /// </summary>
         private void MoveTowards()
         {
-
+            // move towards closest enemy or center of mass of the enemy squad
         }
 
         /// <summary>
@@ -164,7 +175,7 @@ namespace NetworkTraining
         /// </summary>
         private void MoveBack()
         {
-
+            // some sort of behavior steering computation in order to back up from enemy squad or maybe just closest enemy
         }
 
         /// <summary>
@@ -172,7 +183,7 @@ namespace NetworkTraining
         /// </summary>
         private void UseStimpack()
         {
-
+            unit.UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
         }
 
         /// <summary>
@@ -180,7 +191,7 @@ namespace NetworkTraining
         /// </summary>
         private void Seek()
         {
-
+            // last known location?
         }
 
         /// <summary>

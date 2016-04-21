@@ -36,12 +36,20 @@ namespace NetworkTraining
 
         #region Public Functions
         /// <summary>
-        /// This function normalizes all the stored information, so that it can be processed by the neural net.
+        /// This function normalizes all the stored information, so that it can be processed efficiently by the neural net.
         /// </summary>
         /// <returns>Normalized array of input information for the neural net.</returns>
         public double[] GetNormalizedData()
         {
-            return null;
+            // Normalization is only done to isStimmed currently. Close magnitudes between data sets makes training more efficient. That will be done alter on, as soon as some network is running.
+            if (!isStimmed)
+            {
+                return new double[] { squadHitPoints, squadCount, enemySquadHitPoints, enemySquadCount, localHitPoints, localWeaponCooldown, velocityX, velocityY, -1};
+            }
+            else
+            {
+                return new double[] { squadHitPoints, squadCount, enemySquadHitPoints, enemySquadCount, localHitPoints, localWeaponCooldown, velocityX, velocityY, 1};
+            }
         }
 
         /// <summary>
