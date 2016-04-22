@@ -4,12 +4,10 @@
     {
         AttackClosest,
         AttackStrongest,
-        AttackMostValueable,
         AttackWeakest,
         MoveTowards,
         MoveBack,
         UseStimpack,
-        Seek,
         SquadState,
         Retreat
     };

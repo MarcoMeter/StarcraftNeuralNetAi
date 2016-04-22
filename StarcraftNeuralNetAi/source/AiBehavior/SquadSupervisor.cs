@@ -2,6 +2,7 @@
 using BroodWar;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
+using System.Linq;
 
 namespace NetworkTraining
 {
@@ -120,36 +121,44 @@ namespace NetworkTraining
         }
 
         /// <summary>
-        /// Find the strongest enemy unit.
+        /// Find the strongest enemy unit. For now this is based on the unit's hit points.
         /// </summary>
-        /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
         /// <returns>Returns the strongest enemy combat unit to the requesting controlled combat unit.</returns>
-        public Unit GetStrongestEnemyUnit(AiCombatUnitBehavior requestingUnit)
+        public Unit GetStrongestEnemyUnit()
         {
-            Unit unit = null;
-            return unit;
+            List<Unit> sortedByHitPoints = enemyCombatUnits.OrderBy(u => u.HitPoints).ToList();
+            return sortedByHitPoints[0];
         }
 
         /// <summary>
-        /// Find the most valueable enemy unit.
+        /// Find the weakest enemy unit. So far this is based on hit points.
         /// </summary>
-        /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
-        /// <returns>Returns the most valueable enemy combat unit to the requesting controlled combat unit.</returns>
-        public Unit GetMostValueableEnemyUnit(AiCombatUnitBehavior requestingUnit)
-        {
-            Unit unit = null;
-            return unit;
-        }
-
-        /// <summary>
-        /// Find the weakest enemy unit.
-        /// </summary>
-        /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
         /// <returns>Returns the weakest enemy combat unit to the requesting controlled combat unit.</returns>
-        public Unit GetWeakestEnemyUnit(AiCombatUnitBehavior requestingUnit)
+        public Unit GetWeakestEnemyUnit()
         {
-            Unit unit = null;
-            return unit;
+            List<Unit> sortedByHitPoints = enemyCombatUnits.OrderByDescending(u => u.HitPoints).ToList();
+            return sortedByHitPoints[0];
+        }
+
+        /// <summary>
+        /// Computes the mean of every single location of each enemy combat unit.
+        /// </summary>
+        /// <returns>Returns the mean of all enemy units' position.</returns>
+        public Position GetEnemySquadCenter()
+        {
+            int x = 0;
+            int y = 0;
+
+            foreach(Unit unit in enemyCombatUnits)
+            {
+                x += unit.Position.X;
+                y += unit.Position.Y;
+            }
+
+            x = x / enemyCombatUnits.Count;
+            y = y / enemyCombatUnits.Count;
+
+            return new Position(x, y);
         }
         // Setter
         #endregion

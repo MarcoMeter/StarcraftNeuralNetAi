@@ -81,8 +81,7 @@ namespace NetworkTraining
             double[] inputData = inputInfo.GetNormalizedData();
 
             // Use the neural net to classify the input information
-            //CombatUnitState currentState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
-            CombatUnitState currentState = CombatUnitState.AttackClosest; // force state for testing outputs
+            CombatUnitState currentState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
             Game.Write(currentState.ToString());
 
             // state execution
@@ -93,9 +92,6 @@ namespace NetworkTraining
                     break;
                 case CombatUnitState.AttackStrongest:
                     AttackStrongest();
-                    break;
-                case CombatUnitState.AttackMostValueable:
-                    AttackMostValueable();
                     break;
                 case CombatUnitState.AttackWeakest:
                     AttackWeakest();
@@ -108,9 +104,6 @@ namespace NetworkTraining
                     break;
                 case CombatUnitState.UseStimpack:
                     UseStimpack();
-                    break;
-                case CombatUnitState.Seek:
-                    Seek();
                     break;
                 case CombatUnitState.SquadState:
                     SquadState();
@@ -140,19 +133,11 @@ namespace NetworkTraining
         }
 
         /// <summary>
-        /// Attack the fastest enemy unit.
+        /// Attack the strongest enemy unit.
         /// </summary>
         private void AttackStrongest()
         {
-            // ask SS
-        }
-
-        /// <summary>
-        /// Attack the most valueable enemy unit. The value of an unit is based on its training resource costs.
-        /// </summary>
-        private void AttackMostValueable()
-        {
-            // ask SS
+            unit.Attack(squadSupervisor.GetStrongestEnemyUnit(), false);
         }
 
         /// <summary>
@@ -160,15 +145,15 @@ namespace NetworkTraining
         /// </summary>
         private void AttackWeakest()
         {
-            // ask SS
+            unit.Attack(squadSupervisor.GetWeakestEnemyUnit(), false);
         }
 
         /// <summary>
-        /// Move towards enemy.
+        /// Move towards the center of the enemy's squad.
         /// </summary>
         private void MoveTowards()
         {
-            // move towards closest enemy or center of mass of the enemy squad
+            unit.Move(squadSupervisor.GetEnemySquadCenter(), false);
         }
 
         /// <summary>
@@ -176,7 +161,9 @@ namespace NetworkTraining
         /// </summary>
         private void MoveBack()
         {
-            // some sort of behavior steering computation in order to back up from enemy squad or maybe just closest enemy
+            Position enemySquadPos = squadSupervisor.GetEnemySquadCenter();
+            Position pos = enemySquadPos - unit.Position;
+            unit.Move((pos * -3) + unit.Position, false);
         }
 
         /// <summary>
@@ -185,14 +172,6 @@ namespace NetworkTraining
         private void UseStimpack()
         {
             unit.UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
-        }
-
-        /// <summary>
-        /// Seek enemy.
-        /// </summary>
-        private void Seek()
-        {
-            // last known location?
         }
 
         /// <summary>
