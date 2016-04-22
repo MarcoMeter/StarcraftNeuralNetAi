@@ -16,8 +16,9 @@ namespace NetworkTraining
     public class TrainingModule : AiBase
     {
         #region Member
-        SquadSupervisor squadSupervisor;
-        bool isEnemySquadInitialized;
+        private SquadSupervisor squadSupervisor;
+        private bool isEnemySquadInitialized;
+        private static int matchNumber = 0;
         #endregion
 
         #region Events
@@ -26,6 +27,7 @@ namespace NetworkTraining
         /// </summary>
         public override void OnStart()
         {
+            matchNumber++;
             // Config match
             Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
             Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
@@ -109,7 +111,10 @@ namespace NetworkTraining
         #endregion
 
         #region Public Functions
-
+        public static int GetMatchNumber()
+        {
+            return matchNumber;
+        }
         #endregion
     }
 }
