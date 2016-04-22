@@ -69,9 +69,9 @@ namespace NetworkTraining
 
         #region Behavior Logic
         /// <summary>
-        /// The neural net will be executed each frame. Based on the decisions made by net net, the concerning state of the finite state machine will be executed.
+        /// The neural net will be executed several times a second, which is determined by the SquadSupervisor. Based on the decisions made by the net, the concerning state of the finite state machine will be executed.
         /// </summary>
-        public void OnFrame()
+        public void ExecuteStateMachine()
         {
             inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
 
@@ -81,7 +81,8 @@ namespace NetworkTraining
             double[] inputData = inputInfo.GetNormalizedData();
 
             // Use the neural net to classify the input information
-            CombatUnitState currentState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
+            //CombatUnitState currentState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
+            CombatUnitState currentState = CombatUnitState.AttackClosest; // force state for testing outputs
             Game.Write(currentState.ToString());
 
             // state execution
@@ -90,8 +91,8 @@ namespace NetworkTraining
                 case CombatUnitState.AttackClosest:
                     AttackClosest();
                     break;
-                case CombatUnitState.AttackFastest:
-                    AttackFastest();
+                case CombatUnitState.AttackStrongest:
+                    AttackStrongest();
                     break;
                 case CombatUnitState.AttackMostValueable:
                     AttackMostValueable();
@@ -135,15 +136,15 @@ namespace NetworkTraining
         /// </summary>
         private void AttackClosest()
         {
-
+            unit.Attack(squadSupervisor.GetClosestEnemyUnit(this), false);
         }
 
         /// <summary>
         /// Attack the fastest enemy unit.
         /// </summary>
-        private void AttackFastest()
+        private void AttackStrongest()
         {
-
+            // ask SS
         }
 
         /// <summary>
@@ -151,7 +152,7 @@ namespace NetworkTraining
         /// </summary>
         private void AttackMostValueable()
         {
-
+            // ask SS
         }
 
         /// <summary>
@@ -159,7 +160,7 @@ namespace NetworkTraining
         /// </summary>
         private void AttackWeakest()
         {
-
+            // ask SS
         }
 
         /// <summary>

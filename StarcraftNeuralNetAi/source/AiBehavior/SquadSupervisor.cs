@@ -95,6 +95,62 @@ namespace NetworkTraining
             return this.globalInputInfo;
         }
 
+        /// <summary>
+        /// Find the closest enemy unit.
+        /// </summary>
+        /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
+        /// <returns>Returns the closest enemy combat unit to the requesting controlled combat unit.</returns>
+        public Unit GetClosestEnemyUnit(AiCombatUnitBehavior requestingUnit)
+        {
+            Unit closestUnit = null;
+            double distance = 100000;
+
+            // loop through all enemy units and search for the closest one
+            foreach(Unit unit in enemyCombatUnits)
+            {
+                double tempDistance = unit.Distance(requestingUnit.GetUnit());
+
+                if(tempDistance < distance)
+                {
+                    closestUnit = unit;
+                    distance = tempDistance;
+                }
+            }
+            return closestUnit;
+        }
+
+        /// <summary>
+        /// Find the strongest enemy unit.
+        /// </summary>
+        /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
+        /// <returns>Returns the strongest enemy combat unit to the requesting controlled combat unit.</returns>
+        public Unit GetStrongestEnemyUnit(AiCombatUnitBehavior requestingUnit)
+        {
+            Unit unit = null;
+            return unit;
+        }
+
+        /// <summary>
+        /// Find the most valueable enemy unit.
+        /// </summary>
+        /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
+        /// <returns>Returns the most valueable enemy combat unit to the requesting controlled combat unit.</returns>
+        public Unit GetMostValueableEnemyUnit(AiCombatUnitBehavior requestingUnit)
+        {
+            Unit unit = null;
+            return unit;
+        }
+
+        /// <summary>
+        /// Find the weakest enemy unit.
+        /// </summary>
+        /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
+        /// <returns>Returns the weakest enemy combat unit to the requesting controlled combat unit.</returns>
+        public Unit GetWeakestEnemyUnit(AiCombatUnitBehavior requestingUnit)
+        {
+            Unit unit = null;
+            return unit;
+        }
         // Setter
         #endregion
 
@@ -106,10 +162,13 @@ namespace NetworkTraining
         {
             globalInputInfo = GatherRawInputData();
 
-            // trigger on frame on the individual ai units
-            foreach(AiCombatUnitBehavior combatUnit in combatUnits)
+            if (Game.FrameCount % 3 == 0) // A combat unit can't be commanded each frame properly.
             {
-                combatUnit.OnFrame();
+                // trigger on frame on the individual ai units
+                foreach (AiCombatUnitBehavior combatUnit in combatUnits)
+                {
+                    combatUnit.ExecuteStateMachine();
+                }
             }
         }
 
@@ -118,7 +177,11 @@ namespace NetworkTraining
         /// </summary>
         public void OnUnitDestroy(Unit destroyedUnit)
         {
-
+            // Update enemy combat unit list
+            if(destroyedUnit.Player.Id != Game.Self.Id)
+            {
+                enemyCombatUnits.RemoveAt(enemyCombatUnits.IndexOf(destroyedUnit));
+            }
         }
         #endregion
 

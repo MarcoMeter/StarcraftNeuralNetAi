@@ -3,7 +3,7 @@
     public enum CombatUnitState
     {
         AttackClosest,
-        AttackFastest,
+        AttackStrongest,
         AttackMostValueable,
         AttackWeakest,
         MoveTowards,

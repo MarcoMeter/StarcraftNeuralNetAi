@@ -41,7 +41,6 @@ namespace NetworkTraining
             BasicNetwork network = new BasicNetwork();
             network.AddLayer(new BasicLayer(null, true, 9));
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
-            network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 8));
             network.Structure.FinalizeStructure();
             network.Reset();
@@ -62,10 +61,10 @@ namespace NetworkTraining
                 
                 // Some test calls to engage a fight
                 //squadSupervisor.ForceAttack(); // 10 vs 10 -> Test
-                squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies -> Test
+                //squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies -> Test
             }
 
-            Game.DrawTextScreen(5, 0, "Me/Enemy {0}/{1}", Game.Self.Units.Count, Game.Enemy.Units.Count);
+            DrawOnScreen();
 
             squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
         }
@@ -107,6 +106,15 @@ namespace NetworkTraining
                     squadSupervisor.AddEnemyCombatUnit(unit);
                 }
             }
+        }
+
+        /// <summary>
+        /// Draws unit counts and FPS on the screen.
+        /// </summary>
+        private void DrawOnScreen()
+        {
+            Game.DrawTextScreen(5, 0, "FPS : {0}", Game.Fps);
+            Game.DrawTextScreen(5, 10, "Me/Enemy {0}/{1}", Game.Self.Units.Count, Game.Enemy.Units.Count);
         }
         #endregion
 
