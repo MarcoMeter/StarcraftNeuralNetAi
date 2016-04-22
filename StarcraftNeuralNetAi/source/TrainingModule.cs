@@ -35,8 +35,6 @@ namespace NetworkTraining
             isEnemySquadInitialized = false;
             squadSupervisor = new SquadSupervisor();
 
-            InitializeSquad();
-
             // Build and save a new Artificial Neural Network for testing purposes
             BasicNetwork network = new BasicNetwork();
             network.AddLayer(new BasicLayer(null, true, 9));
@@ -45,7 +43,9 @@ namespace NetworkTraining
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 8));
             network.Structure.FinalizeStructure();
             network.Reset();
-            EncogDirectoryPersistence.SaveObject(new System.IO.FileInfo("testNetwork.ann"), network);
+            EncogDirectoryPersistence.SaveObject(new System.IO.FileInfo("testNetwork" + Game.Self.Id.ToString() + ".ann"), network);
+
+            InitializeSquad();
         }
 
         /// <summary>

@@ -34,7 +34,7 @@ namespace NetworkTraining
             this.unit = unit;
             this.squadSupervisor = supervisor;
             // Load the artificial neural network
-            this.neuralNet = (BasicNetwork)EncogDirectoryPersistence.LoadObject(new FileInfo("testNetwork.ann"));
+            this.neuralNet = (BasicNetwork)EncogDirectoryPersistence.LoadObject(new FileInfo("testNetwork" + Game.Self.Id.ToString() + ".ann"));
         }
         #endregion
 
