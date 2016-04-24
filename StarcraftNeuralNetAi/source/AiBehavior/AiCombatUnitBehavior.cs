@@ -20,6 +20,7 @@ namespace NetworkTraining
         private SquadSupervisor squadSupervisor;
         private CombatUnitState currentState = CombatUnitState.SquadState;
         private bool stateTransition = true;
+        private Unit currentTarget;
         private InputInformation inputInfo;
         private BasicNetwork neuralNet;
         #endregion
@@ -84,8 +85,6 @@ namespace NetworkTraining
             // Use the neural net to classify the input information
             CombatUnitState newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
 
-            Game.Write(currentState.ToString());
-
             // Determine if a state transition occured
             if (newState != currentState)
             {
@@ -96,6 +95,7 @@ namespace NetworkTraining
             {
                 stateTransition = false;
             }
+            Game.Write(currentState.ToString());
 
             // state execution
             switch (currentState)
@@ -142,8 +142,13 @@ namespace NetworkTraining
         /// </summary>
         private void AttackClosest()
         {
-            //unit.Attack(squadSupervisor.GetClosestEnemyUnit(this), false);
-            SmartAttack(squadSupervisor.GetClosestEnemyUnit(this));
+            // Find a new target, if this is the first time executing this state or if the target doesn't exist
+            if (stateTransition || currentTarget == null)
+            {
+                currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+            }
+
+            SmartAttack(currentTarget);
         }
 
         /// <summary>
@@ -151,8 +156,13 @@ namespace NetworkTraining
         /// </summary>
         private void AttackStrongest()
         {
-            //unit.Attack(squadSupervisor.GetStrongestEnemyUnit(), false);
-            SmartAttack(squadSupervisor.GetStrongestEnemyUnit());
+            // Find a new target, if this is the first time executing this state or if the target doesn't exist
+            if (stateTransition || currentTarget == null)
+            {
+                currentTarget = squadSupervisor.GetStrongestEnemyUnit();
+            }
+
+            SmartAttack(currentTarget);
         }
 
         /// <summary>
@@ -160,8 +170,13 @@ namespace NetworkTraining
         /// </summary>
         private void AttackWeakest()
         {
-            //unit.Attack(squadSupervisor.GetWeakestEnemyUnit(), false);
-            SmartAttack(squadSupervisor.GetWeakestEnemyUnit());
+            // Find a new target, if this is the first time executing this state or if the target doesn't exist
+            if (stateTransition || currentTarget == null)
+            {
+                currentTarget = squadSupervisor.GetWeakestEnemyUnit();
+            }
+
+            SmartAttack(currentTarget);
         }
 
         /// <summary>
