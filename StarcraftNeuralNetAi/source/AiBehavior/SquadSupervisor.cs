@@ -171,13 +171,10 @@ namespace NetworkTraining
         {
             globalInputInfo = GatherRawInputData();
 
-            if (Game.FrameCount % 3 == 0) // A combat unit can't be commanded each frame properly.
+            // trigger on frame on the individual ai units
+            foreach (AiCombatUnitBehavior combatUnit in combatUnits)
             {
-                // trigger on frame on the individual ai units
-                foreach (AiCombatUnitBehavior combatUnit in combatUnits)
-                {
-                    combatUnit.ExecuteStateMachine();
-                }
+                combatUnit.ExecuteStateMachine();
             }
         }
 

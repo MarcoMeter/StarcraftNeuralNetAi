@@ -19,6 +19,7 @@ namespace NetworkTraining
         private Unit unit;
         private SquadSupervisor squadSupervisor;
         private CombatUnitState currentState = CombatUnitState.SquadState;
+        private bool stateTransition = true;
         private InputInformation inputInfo;
         private BasicNetwork neuralNet;
         #endregion
@@ -81,8 +82,20 @@ namespace NetworkTraining
             double[] inputData = inputInfo.GetNormalizedData();
 
             // Use the neural net to classify the input information
-            CombatUnitState currentState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
+            CombatUnitState newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
+
             Game.Write(currentState.ToString());
+
+            // Determine if a state transition occured
+            if (newState != currentState)
+            {
+                stateTransition = true;
+                currentState = newState; // transition to new state
+            }
+            else
+            {
+                stateTransition = false;
+            }
 
             // state execution
             switch (currentState)
@@ -129,7 +142,8 @@ namespace NetworkTraining
         /// </summary>
         private void AttackClosest()
         {
-            unit.Attack(squadSupervisor.GetClosestEnemyUnit(this), false);
+            //unit.Attack(squadSupervisor.GetClosestEnemyUnit(this), false);
+            SmartAttack(squadSupervisor.GetClosestEnemyUnit(this));
         }
 
         /// <summary>
@@ -137,7 +151,8 @@ namespace NetworkTraining
         /// </summary>
         private void AttackStrongest()
         {
-            unit.Attack(squadSupervisor.GetStrongestEnemyUnit(), false);
+            //unit.Attack(squadSupervisor.GetStrongestEnemyUnit(), false);
+            SmartAttack(squadSupervisor.GetStrongestEnemyUnit());
         }
 
         /// <summary>
@@ -145,7 +160,8 @@ namespace NetworkTraining
         /// </summary>
         private void AttackWeakest()
         {
-            unit.Attack(squadSupervisor.GetWeakestEnemyUnit(), false);
+            //unit.Attack(squadSupervisor.GetWeakestEnemyUnit(), false);
+            SmartAttack(squadSupervisor.GetWeakestEnemyUnit());
         }
 
         /// <summary>
@@ -153,7 +169,7 @@ namespace NetworkTraining
         /// </summary>
         private void MoveTowards()
         {
-            unit.Move(squadSupervisor.GetEnemySquadCenter(), false);
+            SmartMove(squadSupervisor.GetEnemySquadCenter());
         }
 
         /// <summary>
@@ -162,8 +178,8 @@ namespace NetworkTraining
         private void MoveBack()
         {
             Position enemySquadPos = squadSupervisor.GetEnemySquadCenter();
-            Position pos = enemySquadPos - unit.Position;
-            unit.Move((pos * -3) + unit.Position, false);
+            Position pos = squadSupervisor.GetEnemySquadCenter() - unit.Position;
+            SmartMove((pos * -3) + unit.Position);
         }
 
         /// <summary>
@@ -180,6 +196,45 @@ namespace NetworkTraining
         private void Retreat()
         {
 
+        }
+        #endregion
+
+        #region Local Functions
+        /// <summary>
+        /// SmartAttack prevents issuing the same command over and over again.
+        /// </summary>
+        /// <param name="target">The unit to attack.</param>
+        private void SmartAttack(Unit target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            // check if the unit is already attacking the target, so that the same command won't be issued over and over again
+            if (unit.LastCommand.Type == UnitCommandType.AttackUnit && unit.LastCommand.Target == target)
+            {
+                return;
+            }
+
+            unit.Attack(target, false);
+        }
+
+        /// <summary>
+        /// SmartMove prevents issuing the same command over and over again.
+        /// </summary>
+        /// <param name="targetPosition">The position to move to.</param>
+        private void SmartMove(Position targetPosition)
+        {
+            if(unit.LastCommand.Type == UnitCommandType.Move && unit.LastCommand.TargetPosition == targetPosition && unit.IsMoving)
+            {
+                return;
+            }
+
+            if(!unit.Move(targetPosition, false))
+            {
+                unit.HoldPosition(false);
+            }
         }
         #endregion
     }
