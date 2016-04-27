@@ -188,6 +188,17 @@ namespace NetworkTraining
             {
                 enemyCombatUnits.RemoveAt(enemyCombatUnits.IndexOf(destroyedUnit));
             }
+            else
+            {
+                // Update controlled combat units list
+                for(int i = 0; i < combatUnits.Count; i++)
+                {
+                    if(destroyedUnit == combatUnits[i].GetUnit())
+                    {
+                        combatUnits.RemoveAt(i);
+                    }
+                }
+            }
         }
         #endregion
 
