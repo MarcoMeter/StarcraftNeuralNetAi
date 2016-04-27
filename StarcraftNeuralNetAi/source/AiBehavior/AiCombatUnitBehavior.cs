@@ -108,7 +108,6 @@ namespace NetworkTraining
 
                 requestDecision = false;
             }
-            Game.Write(currentState.ToString());
 
             // state execution
             switch (currentState)
@@ -208,7 +207,7 @@ namespace NetworkTraining
         /// </summary>
         private void MoveTowards()
         {
-            if (stateFrameCount < 10)
+            if (stateFrameCount < 7)
             {
                 SmartMove(squadSupervisor.GetEnemySquadCenter());
                 stateFrameCount++;
@@ -225,7 +224,7 @@ namespace NetworkTraining
         /// </summary>
         private void MoveBack()
         {
-            if (stateFrameCount < 10)
+            if (stateFrameCount < 7)
             {
                 Position enemySquadPos = squadSupervisor.GetEnemySquadCenter();
                 Position pos = squadSupervisor.GetEnemySquadCenter() - unit.Position;
@@ -313,7 +312,7 @@ namespace NetworkTraining
         /// </summary>
         private void DrawUnitInfo()
         {
-            Game.DrawTextMap(unit.Position.X, unit.Position.Y - 5, currentState.ToString(), null);
+            Game.DrawTextMap(unit.Position.X, unit.Position.Y, "{0}", currentState.ToString());
         }
         #endregion
     }
