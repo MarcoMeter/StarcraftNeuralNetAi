@@ -7,6 +7,7 @@ using Encog.Neural.Networks;
 using Encog.Persist;
 using System;
 using System.IO;
+using System.Drawing;
 
 namespace NetworkTraining
 {
@@ -20,9 +21,10 @@ namespace NetworkTraining
         private SquadSupervisor squadSupervisor;
         private CombatUnitState currentState = CombatUnitState.SquadState;
         private bool stateTransition = true;
-        private Unit currentTarget;
         private InputInformation inputInfo;
         private BasicNetwork neuralNet;
+        private bool requestDecision = true;
+        private int stateFrameCount = 0;
         #endregion
 
         #region Constructor
@@ -75,25 +77,36 @@ namespace NetworkTraining
         /// </summary>
         public void ExecuteStateMachine()
         {
-            inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
-
-            // Complete the inputInfo with local information
-            // Pure damage is not considered to be as an input, just because the damage is considered to be constant for now. Weapon cooldown is much more interesting due to stimpack and timing.
-            inputInfo.CompleteInputData(unit.HitPoints, unit.GroundWeaponCooldown, unit.VelocityX, unit.VelocityY, unit.IsStimmed);
-            double[] inputData = inputInfo.GetNormalizedData();
-
-            // Use the neural net to classify the input information
-            CombatUnitState newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
-
-            // Determine if a state transition occured
-            if (newState != currentState)
+            // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
+            if (requestDecision)
             {
-                stateTransition = true;
-                currentState = newState; // transition to new state
-            }
-            else
-            {
-                stateTransition = false;
+                inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
+
+                // Complete the inputInfo with local information
+                // Pure damage is not considered to be as an input, just because the damage is considered to be constant for now. Weapon cooldown is much more interesting due to stimpack and timing.
+                inputInfo.CompleteInputData(unit.HitPoints, unit.GroundWeaponCooldown, unit.VelocityX, unit.VelocityY, unit.IsStimmed);
+                double[] inputData = inputInfo.GetNormalizedData();
+
+                // Use the neural net to classify the input information
+                //CombatUnitState newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
+                
+
+                // Random decision
+                CombatUnitState newState;
+                newState = (CombatUnitState)Utility.randomNumberGenerator.Next(6);
+
+                // Determine if a state transition occured
+                if (newState != currentState)
+                {
+                    stateTransition = true;
+                    currentState = newState; // transition to new state
+                }
+                else
+                {
+                    stateTransition = false;
+                }
+
+                requestDecision = false;
             }
             Game.Write(currentState.ToString());
 
@@ -127,6 +140,8 @@ namespace NetworkTraining
             }
 
             // fitness function?
+
+            DrawUnitInfo();
         }
 
         /// <summary>
@@ -142,13 +157,16 @@ namespace NetworkTraining
         /// </summary>
         private void AttackClosest()
         {
-            // Find a new target, if this is the first time executing this state or if the target doesn't exist
-            if (stateTransition || currentTarget == null)
+            if (stateFrameCount < 4)
             {
-                currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+                SmartAttack(squadSupervisor.GetClosestEnemyUnit(this));
+                stateFrameCount++;
             }
-
-            SmartAttack(currentTarget);
+            else if (stateFrameCount >= 4 || unit.GroundWeaponCooldown > 0)
+            {
+                stateFrameCount = 0;
+                requestDecision = true;
+            }
         }
 
         /// <summary>
@@ -156,13 +174,16 @@ namespace NetworkTraining
         /// </summary>
         private void AttackStrongest()
         {
-            // Find a new target, if this is the first time executing this state or if the target doesn't exist
-            if (stateTransition || currentTarget == null)
+            if (stateFrameCount < 4)
             {
-                currentTarget = squadSupervisor.GetStrongestEnemyUnit();
+                SmartAttack(squadSupervisor.GetStrongestEnemyUnit());
+                stateFrameCount++;
             }
-
-            SmartAttack(currentTarget);
+            else if(stateFrameCount >= 4 || unit.GroundWeaponCooldown > 0)
+            {
+                stateFrameCount = 0;
+                requestDecision = true;
+            }
         }
 
         /// <summary>
@@ -170,13 +191,16 @@ namespace NetworkTraining
         /// </summary>
         private void AttackWeakest()
         {
-            // Find a new target, if this is the first time executing this state or if the target doesn't exist
-            if (stateTransition || currentTarget == null)
+            if (stateFrameCount < 4)
             {
-                currentTarget = squadSupervisor.GetWeakestEnemyUnit();
+                SmartAttack(squadSupervisor.GetWeakestEnemyUnit());
+                stateFrameCount++;
             }
-
-            SmartAttack(currentTarget);
+            else if (stateFrameCount >= 4 || unit.GroundWeaponCooldown > 0)
+            {
+                stateFrameCount = 0;
+                requestDecision = true;
+            }
         }
 
         /// <summary>
@@ -184,7 +208,16 @@ namespace NetworkTraining
         /// </summary>
         private void MoveTowards()
         {
-            SmartMove(squadSupervisor.GetEnemySquadCenter());
+            if (stateFrameCount < 10)
+            {
+                SmartMove(squadSupervisor.GetEnemySquadCenter());
+                stateFrameCount++;
+            }
+            else
+            {
+                stateFrameCount = 0;
+                requestDecision = true;
+            }
         }
 
         /// <summary>
@@ -192,17 +225,32 @@ namespace NetworkTraining
         /// </summary>
         private void MoveBack()
         {
-            Position enemySquadPos = squadSupervisor.GetEnemySquadCenter();
-            Position pos = squadSupervisor.GetEnemySquadCenter() - unit.Position;
-            SmartMove((pos * -3) + unit.Position);
+            if (stateFrameCount < 10)
+            {
+                Position enemySquadPos = squadSupervisor.GetEnemySquadCenter();
+                Position pos = squadSupervisor.GetEnemySquadCenter() - unit.Position;
+                SmartMove((pos * -1) + unit.Position);
+                stateFrameCount++;
+            }
+            else
+            {
+                stateFrameCount = 0;
+                requestDecision = true;
+            }
         }
 
         /// <summary>
-        /// Use stimpack.
+        /// Use stimpack. That's basically a one frame command.
         /// </summary>
         private void UseStimpack()
         {
-            unit.UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
+            if (!unit.IsStimmed)
+            {
+                unit.UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
+            }
+
+            stateFrameCount = 0;
+            requestDecision = true;
         }
 
         /// <summary>
@@ -226,6 +274,9 @@ namespace NetworkTraining
                 return;
             }
 
+            // Draw attack line
+            Game.DrawLineMap(unit.Position.X, unit.Position.Y, target.Position.X, target.Position.Y, Color.Green);
+
             // check if the unit is already attacking the target, so that the same command won't be issued over and over again
             if (unit.LastCommand.Type == UnitCommandType.AttackUnit && unit.LastCommand.Target == target)
             {
@@ -241,7 +292,12 @@ namespace NetworkTraining
         /// <param name="targetPosition">The position to move to.</param>
         private void SmartMove(Position targetPosition)
         {
-            if(unit.LastCommand.Type == UnitCommandType.Move && unit.LastCommand.TargetPosition == targetPosition && unit.IsMoving)
+            if (targetPosition.IsInvalid)
+            {
+                return;
+            }
+
+            if (unit.LastCommand.Type == UnitCommandType.Move && unit.LastCommand.TargetPosition == targetPosition && unit.IsMoving)
             {
                 return;
             }
@@ -250,6 +306,14 @@ namespace NetworkTraining
             {
                 unit.HoldPosition(false);
             }
+        }
+
+        /// <summary>
+        /// Draws information close to the unit for debugging purposes.
+        /// </summary>
+        private void DrawUnitInfo()
+        {
+            Game.DrawTextMap(unit.Position.X, unit.Position.Y - 5, currentState.ToString(), null);
         }
         #endregion
     }

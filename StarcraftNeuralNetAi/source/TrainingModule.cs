@@ -41,6 +41,7 @@ namespace NetworkTraining
             BasicNetwork network = new BasicNetwork();
             network.AddLayer(new BasicLayer(null, true, 9));
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
+            network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 6));
             network.Structure.FinalizeStructure();
             network.Reset();
