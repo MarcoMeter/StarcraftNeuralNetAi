@@ -17,11 +17,12 @@ namespace NeuralNetTraining
         #region Member
         private Unit unit;
         private SquadSupervisor squadSupervisor;
-        private CombatUnitState currentState = CombatUnitState.SquadState;
-        private bool stateTransition = true;
+        private NeuralNetController neuralNetController;
         private InputInformation inputInfo;
         private BasicNetwork neuralNet;
         private bool requestDecision = true;
+        private CombatUnitState currentState = CombatUnitState.SquadState;
+        private bool stateTransition = true;
         private int stateFrameCount = 0;
         #endregion
 
@@ -36,6 +37,7 @@ namespace NeuralNetTraining
             this.unit = unit;
             this.squadSupervisor = supervisor;
             // Load the artificial neural network
+            this.neuralNetController = NeuralNetController.GetInstance();
             this.neuralNet = (BasicNetwork)EncogDirectoryPersistence.LoadObject(new FileInfo("testNetwork" + Game.Self.Id.ToString() + ".ann"));
         }
         #endregion
@@ -87,7 +89,6 @@ namespace NeuralNetTraining
 
                 // Use the neural net to classify the input information
                 //CombatUnitState newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
-                
 
                 // Random decision
                 CombatUnitState newState;

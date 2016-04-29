@@ -149,8 +149,14 @@ namespace NeuralNetTraining
                 y += unit.Position.Y;
             }
 
-            x = x / enemyCombatUnits.Count;
-            y = y / enemyCombatUnits.Count;
+            if (enemyCombatUnits.Count > 0)
+            {
+                x = x / enemyCombatUnits.Count;
+                y = y / enemyCombatUnits.Count;
+            } else
+            {
+                return null;
+            }
 
             return new Position(x, y);
         }
@@ -207,13 +213,13 @@ namespace NeuralNetTraining
             int enemyHP = 0;
 
             // add hit points of all squad units
-            foreach(CombatUnitTrainingBehavior unit in combatUnits)
+            foreach (CombatUnitTrainingBehavior unit in combatUnits)
             {
                 squadHP += unit.GetUnit().HitPoints;
             }
 
             // add hit points of all enemy units
-            foreach(Unit unit in enemyCombatUnits)
+            foreach (Unit unit in enemyCombatUnits)
             {
                 enemyHP += unit.HitPoints;
             }

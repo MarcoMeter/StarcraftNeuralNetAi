@@ -5,6 +5,7 @@ using Encog.Engine.Network.Activation;
 using Encog.Neural.Networks;
 using Encog.Neural.Networks.Layers;
 using Encog.Persist;
+using NeuralNetTraining.Utility;
 
 namespace NeuralNetTraining
 {
@@ -15,9 +16,10 @@ namespace NeuralNetTraining
     public class TrainingModule : AiBase
     {
         #region Member
-        private SquadSupervisor squadSupervisor;
-        private bool isEnemySquadInitialized;
         private static int matchNumber = 0;
+        private SquadSupervisor squadSupervisor;
+        private NeuralNetController neuralNetController;
+        private bool isEnemySquadInitialized;
         #endregion
 
         #region Events
@@ -33,6 +35,7 @@ namespace NeuralNetTraining
             Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
 
             // Initialize Member
+            neuralNetController = NeuralNetController.GetInstance();
             isEnemySquadInitialized = false;
             squadSupervisor = new SquadSupervisor();
 
@@ -61,8 +64,7 @@ namespace NeuralNetTraining
                 InitializeEnemySquad(); // the enemy squad has to be initialized on the first frame, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
                 isEnemySquadInitialized = true;
                 
-                // Some test calls to engage a fight
-                //squadSupervisor.ForceAttack(); // 10 vs 10 -> Test
+                // Test call to engage a fight
                 //squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies -> Test
             }
 
@@ -79,6 +81,15 @@ namespace NeuralNetTraining
         {
             squadSupervisor.OnUnitDestroy(unit); // pass event to the SquadSupervisor
         }
+
+        /// <summary>
+        /// OnEnd is called as soon as the match concludes. This event is supposed to be used to finalize the generated training data.
+        /// </summary>
+        /// <param name="isWinner"></param>
+        public override void OnEnd(bool isWinner)
+        {
+            neuralNetController.ExecuteTraining();
+        }
         #endregion
 
         #region Local Functions
@@ -87,12 +98,9 @@ namespace NeuralNetTraining
         /// </summary>
         private void InitializeSquad()
         {
-            foreach(Unit unit in Game.AllUnits)
+            foreach(Unit unit in Game.Self.Units)
             {
-                if(unit.Player == Game.Self)
-                {
-                    squadSupervisor.AddCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor));
-                }
+                squadSupervisor.AddCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor));
             }
         }
 
@@ -101,12 +109,9 @@ namespace NeuralNetTraining
         /// </summary>
         private void InitializeEnemySquad()
         {
-            foreach (Unit unit in Game.AllUnits)
+            foreach (Unit unit in Game.Enemy.Units)
             {
-                if (unit.Player != Game.Self)
-                {
-                    squadSupervisor.AddEnemyCombatUnit(unit);
-                }
+                squadSupervisor.AddEnemyCombatUnit(unit);
             }
         }
 
@@ -115,7 +120,8 @@ namespace NeuralNetTraining
         /// </summary>
         private void DrawOnScreen()
         {
-            Game.DrawTextScreen(5, 0, "FPS : {0}", Game.Fps);
+            Game.DrawTextScreen(5, 0, "Player : {0}", Game.Self.Id);
+            Game.DrawTextScreen(60, 0, "FPS : {0}", Game.Fps);
             Game.DrawTextScreen(5, 10, "Me/Enemy {0}/{1}", Game.Self.Units.Count, Game.Enemy.Units.Count);
         }
         #endregion
