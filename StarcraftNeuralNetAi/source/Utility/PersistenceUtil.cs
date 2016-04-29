@@ -1,9 +1,12 @@
 ﻿using System.IO;
 using BroodWar.Api;
 
-namespace NetworkTraining
+namespace NeuralNetTraining.Utility
 {
-    public class FileLogUtil
+    /// <summary>
+    /// The PersistenceUtil takes care of saving files such as log files and artificial neural network files. It also loads the last trained neural net on request.
+    /// </summary>
+    public class PersistenceUtil
     {
         #region Member
         private static string basePath = @"bwapi-data\AI\cs\logs\";

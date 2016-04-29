@@ -1,20 +1,18 @@
-﻿using BroodWar;
-using BroodWar.Api;
-using BroodWar.Api.Enum;
-using Encog.ML.Data;
-using Encog.ML.Data.Basic;
-using Encog.Neural.Networks;
-using Encog.Persist;
-using System;
+﻿using System;
 using System.IO;
 using System.Drawing;
+using BroodWar.Api;
+using BroodWar.Api.Enum;
+using Encog.Neural.Networks;
+using Encog.Persist;
+using NeuralNetTraining.Utility;
 
-namespace NetworkTraining
+namespace NeuralNetTraining
 {
     /// <summary>
-    /// Each controlled combat unit should come with an AiCombatUnitBehavior in order to attach a neural net behavior to that combat unit.
+    /// Each controlled combat unit should be paired to a CombatUnitTrainingBehavior. This behavior takes care of the learning procedure of the individual neural networks.
     /// </summary>
-    public class AiCombatUnitBehavior
+    public class CombatUnitTrainingBehavior
     {
         #region Member
         private Unit unit;
@@ -31,9 +29,9 @@ namespace NetworkTraining
         /// <summary>
         /// Create an instance of the AiCombatBehavior.
         /// </summary>
-        /// <param name="unit">The individual combat unit which needs to be pared with this behavior.</param>
+        /// <param name="unit">The individual combat unit which needs to be paired with this behavior.</param>
         /// <param name="supervisor">The SquadSupervisor which controlls the combat unit.</param>
-        public AiCombatUnitBehavior(Unit unit, SquadSupervisor supervisor)
+        public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor)
         {
             this.unit = unit;
             this.squadSupervisor = supervisor;
@@ -73,7 +71,7 @@ namespace NetworkTraining
 
         #region Behavior Logic
         /// <summary>
-        /// The neural net will be executed several times a second, which is determined by the SquadSupervisor. Based on the decisions made by the net, the concerning state of the finite state machine will be executed.
+        /// This function is triggered by the SquadSupervirsor each frame. It processes the state machine for the actions and the decision making by the neural network.
         /// </summary>
         public void ExecuteStateMachine()
         {
@@ -93,7 +91,7 @@ namespace NetworkTraining
 
                 // Random decision
                 CombatUnitState newState;
-                newState = (CombatUnitState)Utility.randomNumberGenerator.Next(6);
+                newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(6);
 
                 // Determine if a state transition occured
                 if (newState != currentState)
@@ -138,8 +136,7 @@ namespace NetworkTraining
                     break;
             }
 
-            // fitness function?
-
+            // Some Debug Visualization
             DrawUnitInfo();
         }
 
@@ -308,7 +305,7 @@ namespace NetworkTraining
         }
 
         /// <summary>
-        /// Draws information close to the unit for debugging purposes.
+        /// Draws information close to the unit for debugging purposes. Displays the current state of the unit.
         /// </summary>
         private void DrawUnitInfo()
         {

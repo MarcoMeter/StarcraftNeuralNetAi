@@ -5,9 +5,8 @@ using Encog.Engine.Network.Activation;
 using Encog.Neural.Networks;
 using Encog.Neural.Networks.Layers;
 using Encog.Persist;
-using System;
 
-namespace NetworkTraining
+namespace NeuralNetTraining
 {
     /// <summary>
     /// Entry point of the injected AI. AiBase implements several event listeners.
@@ -37,7 +36,8 @@ namespace NetworkTraining
             isEnemySquadInitialized = false;
             squadSupervisor = new SquadSupervisor();
 
-            // Build and save a new Artificial Neural Network for testing purposes
+            // Build and save a new Artificial Neural Network
+            /*
             BasicNetwork network = new BasicNetwork();
             network.AddLayer(new BasicLayer(null, true, 9));
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
@@ -46,6 +46,7 @@ namespace NetworkTraining
             network.Structure.FinalizeStructure();
             network.Reset();
             EncogDirectoryPersistence.SaveObject(new System.IO.FileInfo("testNetwork" + Game.Self.Id.ToString() + ".ann"), network);
+            */
 
             InitializeSquad();
         }
@@ -90,7 +91,7 @@ namespace NetworkTraining
             {
                 if(unit.Player == Game.Self)
                 {
-                    squadSupervisor.AddCombatUnit(new AiCombatUnitBehavior(unit, squadSupervisor));
+                    squadSupervisor.AddCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor));
                 }
             }
         }

@@ -4,20 +4,23 @@ using BroodWar.Api;
 using BroodWar.Api.Enum;
 using System.Linq;
 
-namespace NetworkTraining
+namespace NeuralNetTraining
 {
     /// <summary>
-    /// The SquadSupervisor is a Singleton and takes care of controlling all combat units. It pretty much assigns the goal to send units to combat.
+    /// The SquadSupervisor takes care of controlling all combat units. It pretty much assigns the goal to send units to combat.
     /// </summary>
     public class SquadSupervisor
     {
         #region Member
-        private List<AiCombatUnitBehavior> combatUnits = new List<AiCombatUnitBehavior>();
+        private List<CombatUnitTrainingBehavior> combatUnits = new List<CombatUnitTrainingBehavior>();
         private List<Unit> enemyCombatUnits = new List<Unit>();
         private InputInformation globalInputInfo;
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Creates an instance of the SquadSupervisor. Members are modified by public functions.
+        /// </summary>
         public SquadSupervisor()
         {
 
@@ -26,16 +29,16 @@ namespace NetworkTraining
 
         #region Public Functions
         /// <summary>
-        /// Add owned combat units to the list of the SquadSupervisor.
+        /// Add controlled combat units to the list of the SquadSupervisor.
         /// </summary>
         /// <param name="unit">friendly combat units</param>
-        public void AddCombatUnit(AiCombatUnitBehavior unit)
+        public void AddCombatUnit(CombatUnitTrainingBehavior unit)
         {
             combatUnits.Add(unit);
         }
 
         /// <summary>
-        /// Add not owned combat units to the list of the SquadSupervisor.
+        /// Add enemy combat units to the list of the SquadSupervisor.
         /// </summary>
         /// <param name="unit">enemy combat units</param>
         public void AddEnemyCombatUnit(Unit unit)
@@ -44,27 +47,18 @@ namespace NetworkTraining
         }
 
         /// <summary>
-        /// This is just a test attack towards some position.
+        /// This is a test AttackMove for the whole squad towards some position.
         /// </summary>
         /// <param name="targetPosition">Attack target position</param>
-        public void ForceAttack(Position targetPosition)
+        public void ForceAttack(Position targetPosition, bool useStimpack)
         {
-            foreach(AiCombatUnitBehavior unit in combatUnits)
+            foreach(CombatUnitTrainingBehavior unit in combatUnits)
             {
                 unit.GetUnit().Attack(targetPosition, false);
-                // use stim pack
-                //unit.GetUnit().UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
-            }
-        }
-
-        /// <summary>
-        /// This is just a test attack. It assigns one friendly combat unit to attack one enemy combat unit.
-        /// </summary>
-        public void ForceAttack()
-        {
-            for(int i = 0; i < Game.AllUnits.Count/2; i++)
-            {
-                combatUnits[i].GetUnit().Attack(enemyCombatUnits[i], false);
+                if (useStimpack)
+                {
+                    unit.GetUnit().UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
+                }
             }
         }
 
@@ -101,7 +95,7 @@ namespace NetworkTraining
         /// </summary>
         /// <param name="requestingUnit">Reference the requesting AiCombatUnitBehavior</param>
         /// <returns>Returns the closest enemy combat unit to the requesting controlled combat unit.</returns>
-        public Unit GetClosestEnemyUnit(AiCombatUnitBehavior requestingUnit)
+        public Unit GetClosestEnemyUnit(CombatUnitTrainingBehavior requestingUnit)
         {
             Unit closestUnit = null;
             double distance = 100000;
@@ -163,23 +157,23 @@ namespace NetworkTraining
         // Setter
         #endregion
 
-        #region SquadSupervisor logic
+        #region Events
         /// <summary>
-        /// OnFrame event which is passed down by the SquadSupervisor
+        /// OnFrame event which is triggered by the TrainingModule.
         /// </summary>
         public void OnFrame()
         {
             globalInputInfo = GatherRawInputData();
 
             // trigger on frame on the individual ai units
-            foreach (AiCombatUnitBehavior combatUnit in combatUnits)
+            foreach (CombatUnitTrainingBehavior combatUnit in combatUnits)
             {
                 combatUnit.ExecuteStateMachine();
             }
         }
 
         /// <summary>
-        /// OnUnitDestroy event which is passed down by the SquadSupervisor
+        /// OnUnitDestroy event which is triggered by the TrainingModule
         /// </summary>
         public void OnUnitDestroy(Unit destroyedUnit)
         {
@@ -213,7 +207,7 @@ namespace NetworkTraining
             int enemyHP = 0;
 
             // add hit points of all squad units
-            foreach(AiCombatUnitBehavior unit in combatUnits)
+            foreach(CombatUnitTrainingBehavior unit in combatUnits)
             {
                 squadHP += unit.GetUnit().HitPoints;
             }

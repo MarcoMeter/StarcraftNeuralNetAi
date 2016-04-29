@@ -1,9 +1,9 @@
 ﻿using BroodWar.Api;
 using System;
 
-namespace NetworkTraining
+namespace NeuralNetTraining.Utility
 {
-    public class Utility
+    public class GeneralUtil
     {
         #region Member
         public static Random randomNumberGenerator = new Random();

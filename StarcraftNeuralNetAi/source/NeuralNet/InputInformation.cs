@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetworkTraining
+namespace NeuralNetTraining
 {
     /// <summary>
     /// This object stores and normalizes information for the input layer of the neural network.

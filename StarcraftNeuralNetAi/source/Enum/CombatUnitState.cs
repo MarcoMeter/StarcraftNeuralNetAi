@@ -1,4 +1,4 @@
-﻿namespace NetworkTraining
+﻿namespace NeuralNetTraining
 {
     public enum CombatUnitState
     {
