@@ -16,6 +16,9 @@ namespace NeuralNetTraining
         private SquadSupervisor squadSupervisor;
         private NeuralNetController neuralNetController;
         private bool isEnemySquadInitialized;
+        private bool receivedHandshake = false;
+        private bool sentHandshake = false;
+        private string handshakeMessage = "Commencing Training Process!";
         #endregion
 
         #region Events
@@ -34,6 +37,8 @@ namespace NeuralNetTraining
             neuralNetController = NeuralNetController.GetInstance();
             isEnemySquadInitialized = false;
             squadSupervisor = new SquadSupervisor();
+            receivedHandshake = false;
+            sentHandshake = false;
 
             InitializeSquad();
         }
@@ -47,14 +52,22 @@ namespace NeuralNetTraining
             {
                 InitializeEnemySquad(); // the enemy squad has to be initialized on the first frame, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
                 isEnemySquadInitialized = true;
-                
+
                 // Test call to engage a fight
                 //squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies -> Test
             }
 
-            DrawOnScreen();
+            if(Game.FrameCount == 10)
+            {
+                Game.SendText(handshakeMessage);
+                sentHandshake = true;
+            }
 
-            squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
+            if (receivedHandshake && sentHandshake)
+            {
+                DrawOnScreen(); // draw several information on the screen
+                squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
+            }
         }
 
         /// <summary>
@@ -69,10 +82,23 @@ namespace NeuralNetTraining
         /// <summary>
         /// OnEnd is called as soon as the match concludes. This event is supposed to be used to finalize the generated training data.
         /// </summary>
-        /// <param name="isWinner"></param>
+        /// <param name="isWinner">States if this player has won.</param>
         public override void OnEnd(bool isWinner)
         {
             neuralNetController.ExecuteTraining();
+        }
+
+        /// <summary>
+        /// If a chat message has been received, this event is being triggered. I make use of a handshake to start the training procedure.
+        /// </summary>
+        /// <param name="player">Player who sent the message</param>
+        /// <param name="text">Chat message content.</param>
+        public override void OnReceiveText(Player player, string text)
+        {
+            if (text == handshakeMessage && player.Id != Game.Self.Id)
+            {
+                receivedHandshake = true;
+            }
         }
         #endregion
 

@@ -159,7 +159,7 @@ namespace NeuralNetTraining
                 SmartAttack(squadSupervisor.GetClosestEnemyUnit(this));
                 stateFrameCount++;
             }
-            else if (stateFrameCount >= 4 || unit.GroundWeaponCooldown > 0)
+            else
             {
                 stateFrameCount = 0;
                 requestDecision = true;
@@ -176,7 +176,7 @@ namespace NeuralNetTraining
                 SmartAttack(squadSupervisor.GetStrongestEnemyUnit());
                 stateFrameCount++;
             }
-            else if(stateFrameCount >= 4 || unit.GroundWeaponCooldown > 0)
+            else
             {
                 stateFrameCount = 0;
                 requestDecision = true;
@@ -193,7 +193,7 @@ namespace NeuralNetTraining
                 SmartAttack(squadSupervisor.GetWeakestEnemyUnit());
                 stateFrameCount++;
             }
-            else if (stateFrameCount >= 4 || unit.GroundWeaponCooldown > 0)
+            else
             {
                 stateFrameCount = 0;
                 requestDecision = true;
@@ -225,8 +225,11 @@ namespace NeuralNetTraining
             if (stateFrameCount < 7)
             {
                 Position enemySquadPos = squadSupervisor.GetEnemySquadCenter();
-                Position pos = squadSupervisor.GetEnemySquadCenter() - unit.Position;
-                SmartMove((pos * -1) + unit.Position);
+                if (enemySquadPos != null)
+                {
+                    Position pos = squadSupervisor.GetEnemySquadCenter() - unit.Position;
+                    SmartMove((pos * -1) + unit.Position);
+                }
                 stateFrameCount++;
             }
             else
@@ -266,7 +269,8 @@ namespace NeuralNetTraining
         /// <param name="target">The unit to attack.</param>
         private void SmartAttack(Unit target)
         {
-            if (target == null)
+            // return, if the target is null or dead
+            if (target == null || target.HitPoints == 0)
             {
                 return;
             }
@@ -289,16 +293,19 @@ namespace NeuralNetTraining
         /// <param name="targetPosition">The position to move to.</param>
         private void SmartMove(Position targetPosition)
         {
-            if (targetPosition.IsInvalid)
+            // if the position is null or isn't valide, return
+            if (targetPosition.IsInvalid || targetPosition == null)
             {
                 return;
             }
 
+            // check if the last command is equal to the current command, same applies to the target
             if (unit.LastCommand.Type == UnitCommandType.Move && unit.LastCommand.TargetPosition == targetPosition && unit.IsMoving)
             {
                 return;
             }
 
+            // execute movement
             if(!unit.Move(targetPosition, false))
             {
                 unit.HoldPosition(false);

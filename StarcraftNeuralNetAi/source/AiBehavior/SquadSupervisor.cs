@@ -120,8 +120,15 @@ namespace NeuralNetTraining
         /// <returns>Returns the strongest enemy combat unit to the requesting controlled combat unit.</returns>
         public Unit GetStrongestEnemyUnit()
         {
-            List<Unit> sortedByHitPoints = enemyCombatUnits.OrderBy(u => u.HitPoints).ToList();
-            return sortedByHitPoints[0];
+            if (enemyCombatUnits.Count > 0)
+            {
+                List<Unit> sortedByHitPoints = enemyCombatUnits.OrderBy(u => u.HitPoints).ToList();
+                return sortedByHitPoints[0];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -130,8 +137,15 @@ namespace NeuralNetTraining
         /// <returns>Returns the weakest enemy combat unit to the requesting controlled combat unit.</returns>
         public Unit GetWeakestEnemyUnit()
         {
-            List<Unit> sortedByHitPoints = enemyCombatUnits.OrderByDescending(u => u.HitPoints).ToList();
-            return sortedByHitPoints[0];
+            if (enemyCombatUnits.Count > 0)
+            {
+                List<Unit> sortedByHitPoints = enemyCombatUnits.OrderByDescending(u => u.HitPoints).ToList();
+                return sortedByHitPoints[0];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -153,7 +167,8 @@ namespace NeuralNetTraining
             {
                 x = x / enemyCombatUnits.Count;
                 y = y / enemyCombatUnits.Count;
-            } else
+            }
+            else
             {
                 return null;
             }
