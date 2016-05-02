@@ -6,6 +6,8 @@ using BroodWar.Api.Enum;
 using Encog.Neural.Networks;
 using Encog.Persist;
 using NeuralNetTraining.Utility;
+using Encog.ML.Data.Basic;
+using Encog.ML.Data;
 
 namespace NeuralNetTraining
 {
@@ -18,8 +20,8 @@ namespace NeuralNetTraining
         private Unit unit;
         private SquadSupervisor squadSupervisor;
         private NeuralNetController neuralNetController;
-        private InputInformation inputInfo;
         private BasicNetwork neuralNet;
+        private FitnessMeasure fitnessMeasure;
         private bool requestDecision = true;
         private CombatUnitState currentState = CombatUnitState.SquadState;
         private bool stateTransition = true;
@@ -38,7 +40,7 @@ namespace NeuralNetTraining
             this.squadSupervisor = supervisor;
             // Load the artificial neural network
             this.neuralNetController = NeuralNetController.GetInstance();
-            this.neuralNet = (BasicNetwork)EncogDirectoryPersistence.LoadObject(new FileInfo("testNetwork" + Game.Self.Id.ToString() + ".ann"));
+            this.neuralNet = neuralNetController.GetNeuralNet();
         }
         #endregion
 
@@ -58,17 +60,6 @@ namespace NeuralNetTraining
         {
             return this.currentState;
         }
-
-        public InputInformation GetInputInformation()
-        {
-            return this.inputInfo;
-        }
-
-        // Setter
-        public void ForceState(CombatUnitState state)
-        {
-            this.currentState = state;
-        }
         #endregion
 
         #region Behavior Logic
@@ -80,21 +71,23 @@ namespace NeuralNetTraining
             // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
             if (requestDecision)
             {
-                inputInfo = squadSupervisor.GetGlobalInputInformation(); // request most recent global input information
+                // request input information
+                InputInformation inputInfo = GenerateInputInfo();
 
-                // Complete the inputInfo with local information
-                // Pure damage is not considered to be as an input, just because the damage is considered to be constant for now. Weapon cooldown is much more interesting due to stimpack and timing.
-                inputInfo.CompleteInputData(unit.HitPoints, unit.GroundWeaponCooldown, unit.VelocityX, unit.VelocityY, unit.IsStimmed);
+                // normalize data
                 double[] inputData = inputInfo.GetNormalizedData();
 
-                // Use the neural net to classify the input information
-                //CombatUnitState newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
+                // compute output of the neural ent
+                IMLData outData = neuralNet.Compute(new BasicMLData(inputData));
 
-                // Random decision
+                // determine random action
                 CombatUnitState newState;
                 newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(6);
 
-                // Determine if a state transition occured
+                // initialize FitnessMeasure
+                fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);
+
+                // determine if a state transition is occuring
                 if (newState != currentState)
                 {
                     stateTransition = true;
@@ -163,6 +156,7 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
+                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
             }
         }
 
@@ -180,6 +174,7 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
+                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
             }
         }
 
@@ -197,6 +192,7 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
+                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
             }
         }
 
@@ -214,6 +210,7 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
+                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
             }
         }
 
@@ -236,6 +233,7 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
+                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
             }
         }
 
@@ -251,6 +249,7 @@ namespace NeuralNetTraining
 
             stateFrameCount = 0;
             requestDecision = true;
+            neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
         }
 
         /// <summary>
@@ -318,6 +317,28 @@ namespace NeuralNetTraining
         private void DrawUnitInfo()
         {
             Game.DrawTextMap(unit.Position.X, unit.Position.Y, "{0}", currentState.ToString());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private InputInformation GenerateInputInfo()
+        {
+            // request most recent global input information
+            InputInformation info = squadSupervisor.GetGlobalInputInformation();
+
+            // complete the inputInfo with local information
+            if (unit.IsStimmed)
+            {
+                info.CompleteInputData(unit.HitPoints, 0.75);
+            }
+            else
+            {
+                info.CompleteInputData(unit.HitPoints, 0.375);
+            }
+
+            return info;
         }
         #endregion
     }

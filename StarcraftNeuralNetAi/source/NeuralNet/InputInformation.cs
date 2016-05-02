@@ -14,23 +14,24 @@ namespace NeuralNetTraining
         // Known by SquadSupervisor
         private int squadHitPoints;
         private int squadCount;
+        private double squadDpf;
         private int enemySquadHitPoints;
         private int enemySquadCount;
-        // Known by AiCobatUnitBehavior
+        private double enenmyDpf;
+        // Known by CombatUnitTrainingBehavior
         private int localHitPoints;
-        private int localWeaponCooldown;
-        private double velocityX;
-        private double velocityY;
-        private bool isStimmed = false;
+        private double localDpf;
         #endregion
 
         #region Constructor
-        public InputInformation(int squadHP, int squadCount, int enemySquadHP, int enemySquadCount)
+        public InputInformation(int squadHP, int squadCount, double squadDpf, int enemySquadHP, int enemySquadCount, double enemyDpf)
         {
             this.squadHitPoints = squadHP;
             this.squadCount = squadCount;
+            this.squadDpf = squadDpf;
             this.enemySquadHitPoints = enemySquadHP;
             this.enemySquadCount = enemySquadCount;
+            this.enenmyDpf = enemyDpf;
         }
         #endregion
 
@@ -41,15 +42,7 @@ namespace NeuralNetTraining
         /// <returns>Normalized array of input information for the neural net.</returns>
         public double[] GetNormalizedData()
         {
-            // Normalization is only done to isStimmed currently. Close magnitudes between data sets makes training more efficient. That will be done alter on, as soon as some network is running.
-            if (!isStimmed)
-            {
-                return new double[] { squadHitPoints, squadCount, enemySquadHitPoints, enemySquadCount, localHitPoints, localWeaponCooldown, velocityX, velocityY, -1};
-            }
-            else
-            {
-                return new double[] { squadHitPoints, squadCount, enemySquadHitPoints, enemySquadCount, localHitPoints, localWeaponCooldown, velocityX, velocityY, 1};
-            }
+            return new double[] {squadHitPoints / 400, squadCount / 10, squadDpf / 7.5, enemySquadHitPoints / 400, enemySquadCount / 10, enenmyDpf / 7.5, localHitPoints / 40, localDpf / 0.75};
         }
 
         /// <summary>
@@ -60,40 +53,36 @@ namespace NeuralNetTraining
         /// <param name="velocityX">The speed of the combat unit on the x-axis.</param>
         /// <param name="velocityY">The speed of the combat unit on the y-axis.</param>
         /// <param name="isStimmed">Is the combat unit on the effect caused by the Stimpack?</param>
-        public void CompleteInputData(int hitPoints, int weaponCooldown, double velocityX, double velocityY, bool isStimmed)
+        public void CompleteInputData(int hitPoints, double dpf)
         {
             this.localHitPoints = hitPoints;
-            this.localWeaponCooldown = weaponCooldown;
-            this.velocityX = velocityX;
-            this.velocityY = velocityY;
-            this.isStimmed = isStimmed;
+            this.localDpf = dpf;
         }
 
         // Getter
-        public int GetSquadHitPoints()
+
+        /// <summary>
+        /// Each input information, which is supposed to be friendly, is getting normalized first and then returned.
+        /// </summary>
+        /// <returns>Returns all normalized friendly values as array.</returns>
+        public double[] GetFriendlyInfo()
         {
-            return this.squadHitPoints;
+            return new double[] {squadHitPoints / 400, squadCount / 10, squadDpf / 7.5, localHitPoints / 40, localDpf / 0.75};
         }
 
-        public int GetSquadCount()
+        /// <summary>
+        /// Each input information, which is supposed to be of the enemy, is getting normalized first and then returned.
+        /// </summary>
+        /// <returns>Returns all normalized enemy values as array.</returns>
+        public double[] GetEnemyInfo()
         {
-            return this.squadCount;
-        }
-
-        public int GetEnemySquadHitPoints()
-        {
-            return this.enemySquadHitPoints;
-        }
-
-        public int GetEnemySquadCount()
-        {
-            return this.enemySquadCount;
+            return new double[] {enemySquadHitPoints / 400, enemySquadCount / 10, enenmyDpf / 7.5};
         }
 
         public override String ToString()
         {
-            return "Squad hp : " + squadHitPoints + ", Squad count : " + squadCount + ", Enemy squad hp : " + enemySquadHitPoints + ", Enemy squad count : " + enemySquadCount +
-                ", Local hp : " + localHitPoints + ", Local cd : " + localWeaponCooldown + ", Local velocity : (" + velocityX + "/" + velocityY + "), Local isStimmed : " + isStimmed;
+            return "Squad hp : " + squadHitPoints + ", Squad count : " + squadCount + ", Squad dpf : " + squadDpf + ", Enemy squad hp : " + enemySquadHitPoints + ", Enemy squad count : " + enemySquadCount +
+                ", enemy squad dpf : " + enenmyDpf + ", Local hp : " + localHitPoints + ", Local dpf : " + localDpf;
         }
         #endregion
 

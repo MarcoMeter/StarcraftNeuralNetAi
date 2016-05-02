@@ -5,10 +5,12 @@ using System.Linq;
 using System.Text;
 using BroodWar.Api;
 using Encog.Neural.Networks;
-using Encog.Persist;
 using NeuralNetTraining.Utility;
 using Encog.Neural.Networks.Layers;
 using Encog.Engine.Network.Activation;
+using Encog.Neural.Networks.Training.Propagation.Back;
+using Encog.ML.Data.Basic;
+using Encog.Persist;
 
 namespace NeuralNetTraining
 {
@@ -19,9 +21,11 @@ namespace NeuralNetTraining
     {
         #region Member
         private static NeuralNetController instance;
-        private List<double[]> trainingData = new List<double[]>();
+        private BasicMLDataSet dataSet = new BasicMLDataSet();
         private BasicNetwork neuralNet;
-
+        private Backpropagation trainer;
+        private double learningRate = 0.7;
+        private double momentum = 0.3;
         #endregion
 
         #region Constructor
@@ -37,7 +41,7 @@ namespace NeuralNetTraining
             if(this.neuralNet == null)
             {
                 this.neuralNet = new BasicNetwork();
-                this.neuralNet.AddLayer(new BasicLayer(null, true, 9));
+                this.neuralNet.AddLayer(new BasicLayer(null, true, 8));
                 this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
                 this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
                 this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 6));
@@ -66,9 +70,9 @@ namespace NeuralNetTraining
         /// Adds the generated data pairs to the training data list.
         /// </summary>
         /// <param name="dataPair">A data pair made of the normalized input information and the ideal output action.</param>
-        public void AddTrainingDataPair(double[] dataPair)
+        public void AddTrainingDataPair(BasicMLDataPair dataPair)
         {
-            trainingData.Add(dataPair);
+            dataSet.Add(dataPair);
         }
 
         /// <summary>
@@ -85,7 +89,12 @@ namespace NeuralNetTraining
         /// </summary>
         public void ExecuteTraining()
         {
+            /*
+            trainer = new Backpropagation(neuralNet, dataSet, learningRate, momentum);
+            trainer.Iteration();
+            trainer.FinishTraining();
             PersistenceUtil.SaveNeuralNet(neuralNet);
+            */
         }
         #endregion
 

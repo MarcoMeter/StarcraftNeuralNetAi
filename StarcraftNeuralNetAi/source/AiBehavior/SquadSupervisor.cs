@@ -226,20 +226,40 @@ namespace NeuralNetTraining
         {
             int squadHP = 0;
             int enemyHP = 0;
+            double squadDpf = 0;
+            double enemyDpf = 0;
 
-            // add hit points of all squad units
+            // gather information concerning the friendly squad
             foreach (CombatUnitTrainingBehavior unit in combatUnits)
             {
                 squadHP += unit.GetUnit().HitPoints;
+                // determine overall dpf
+                if(unit.GetUnit().IsStimmed)
+                {
+                    squadDpf += 0.75;
+                }
+                else
+                {
+                    squadDpf += 0.375;
+                }
             }
 
-            // add hit points of all enemy units
+            // gather information concerning the enemy squad
             foreach (Unit unit in enemyCombatUnits)
             {
                 enemyHP += unit.HitPoints;
+                // determine overall dpf
+                if (unit.IsStimmed)
+                {
+                    enemyDpf += 0.75;
+                }
+                else
+                {
+                    enemyDpf += 0.375;
+                }
             }
 
-            InputInformation info = new InputInformation(squadHP, Game.Self.Units.Count, enemyHP, Game.Enemy.Units.Count);
+            InputInformation info = new InputInformation(squadHP, Game.Self.Units.Count, squadDpf,enemyHP, Game.Enemy.Units.Count, enemyDpf);
             
             return info;
         }
