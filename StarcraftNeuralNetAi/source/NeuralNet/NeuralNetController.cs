@@ -89,12 +89,11 @@ namespace NeuralNetTraining
         /// </summary>
         public void ExecuteTraining()
         {
-            /*
             trainer = new Backpropagation(neuralNet, dataSet, learningRate, momentum);
             trainer.Iteration();
             trainer.FinishTraining();
+            dataSet = new BasicMLDataSet();
             PersistenceUtil.SaveNeuralNet(neuralNet);
-            */
         }
         #endregion
 

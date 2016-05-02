@@ -83,6 +83,7 @@ namespace NeuralNetTraining
                 // determine random action
                 CombatUnitState newState;
                 newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(6);
+                //newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
 
                 // initialize FitnessMeasure
                 fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);
