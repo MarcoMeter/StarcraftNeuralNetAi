@@ -26,6 +26,7 @@ namespace NeuralNetTraining
         private CombatUnitState currentState = CombatUnitState.SquadState;
         private bool stateTransition = true;
         private int stateFrameCount = 0;
+        private bool trainingMode;
         #endregion
 
         #region Constructor
@@ -34,13 +35,15 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="unit">The individual combat unit which needs to be paired with this behavior.</param>
         /// <param name="supervisor">The SquadSupervisor which controlls the combat unit.</param>
-        public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor)
+        /// <param name="trainingMode">Determining if the whole flow is about executing a neural net or training one.</param>
+        public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor, bool trainingMode)
         {
             this.unit = unit;
             this.squadSupervisor = supervisor;
             // Load the artificial neural network
             this.neuralNetController = NeuralNetController.GetInstance();
             this.neuralNet = neuralNetController.GetNeuralNet();
+            this.trainingMode = trainingMode;
         }
         #endregion
 
@@ -71,22 +74,19 @@ namespace NeuralNetTraining
             // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
             if (requestDecision)
             {
-                // request input information
-                InputInformation inputInfo = GenerateInputInfo();
+                InputInformation inputInfo = GenerateInputInfo();   // request input information
+                double[] inputData = inputInfo.GetNormalizedData(); // normalize data
+                CombatUnitState newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(6);      // determine random actio
 
-                // normalize data
-                double[] inputData = inputInfo.GetNormalizedData();
-
-                // compute output of the neural ent
-                IMLData outData = neuralNet.Compute(new BasicMLData(inputData));
-
-                // determine random action
-                CombatUnitState newState;
-                newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(6);
-                //newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData));
-
-                // initialize FitnessMeasure
-                fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);
+                if (trainingMode)
+                {
+                    IMLData outData = neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
+                    fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);          // initialize FitnessMeasure
+                }
+                else
+                {
+                    newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
+                }              
 
                 // determine if a state transition is occuring
                 if (newState != currentState)
@@ -157,7 +157,10 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
-                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                if (trainingMode)
+                {
+                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                }
             }
         }
 
@@ -175,7 +178,10 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
-                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                if (trainingMode)
+                {
+                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                }
             }
         }
 
@@ -193,7 +199,10 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
-                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                if (trainingMode)
+                {
+                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                }
             }
         }
 
@@ -211,7 +220,10 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
-                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                if (trainingMode)
+                {
+                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                }
             }
         }
 
@@ -234,7 +246,10 @@ namespace NeuralNetTraining
             {
                 stateFrameCount = 0;
                 requestDecision = true;
-                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                if (trainingMode)
+                {
+                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                }
             }
         }
 
@@ -250,7 +265,10 @@ namespace NeuralNetTraining
 
             stateFrameCount = 0;
             requestDecision = true;
-            neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+            if (trainingMode)
+            {
+                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+            }
         }
 
         /// <summary>

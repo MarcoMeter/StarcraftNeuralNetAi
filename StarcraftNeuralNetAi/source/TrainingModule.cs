@@ -18,7 +18,8 @@ namespace NeuralNetTraining
         private bool isEnemySquadInitialized;
         private bool receivedHandshake = false;
         private bool sentHandshake = false;
-        private string handshakeMessage = "Commencing Training Process!";
+        private string handshakeMessage = "Commencing Match Procedure! Training Mode: ";
+        private bool trainingMode = false;
         #endregion
 
         #region Events
@@ -31,7 +32,11 @@ namespace NeuralNetTraining
             // Config match
             Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
             Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
-            Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
+
+            if (trainingMode)
+            {
+                Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
+            }
 
             // Initialize Member
             neuralNetController = NeuralNetController.GetInstance();
@@ -52,14 +57,11 @@ namespace NeuralNetTraining
             {
                 InitializeEnemySquad(); // the enemy squad has to be initialized on the first frame, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
                 isEnemySquadInitialized = true;
-
-                // Test call to engage a fight
-                //squadSupervisor.ForceAttack(Utility.ConvertTilePosition(new TilePosition(29, 27))); // send units to attack some spot between the two armies -> Test
             }
 
             if(Game.FrameCount == 10)
             {
-                Game.SendText(handshakeMessage);
+                Game.SendText(handshakeMessage + trainingMode.ToString());
                 sentHandshake = true;
             }
 
@@ -85,7 +87,10 @@ namespace NeuralNetTraining
         /// <param name="isWinner">States if this player has won.</param>
         public override void OnEnd(bool isWinner)
         {
-            neuralNetController.ExecuteTraining();
+            if (trainingMode)
+            {
+                neuralNetController.ExecuteTraining();
+            }
         }
 
         /// <summary>
@@ -95,7 +100,7 @@ namespace NeuralNetTraining
         /// <param name="text">Chat message content.</param>
         public override void OnReceiveText(Player player, string text)
         {
-            if (text == handshakeMessage && player.Id != Game.Self.Id)
+            if (text == handshakeMessage + trainingMode.ToString() && player.Id != Game.Self.Id)
             {
                 receivedHandshake = true;
             }
@@ -110,7 +115,7 @@ namespace NeuralNetTraining
         {
             foreach(Unit unit in Game.Self.Units)
             {
-                squadSupervisor.AddCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor));
+                squadSupervisor.AddCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor, trainingMode));
             }
         }
 
@@ -126,13 +131,22 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// Draws unit counts and FPS on the screen.
+        /// Draws some match related statistics on the screen.
         /// </summary>
         private void DrawOnScreen()
         {
             Game.DrawTextScreen(5, 0, "Player : {0}", Game.Self.Id);
             Game.DrawTextScreen(60, 0, "FPS : {0}", Game.Fps);
             Game.DrawTextScreen(5, 10, "Me/Enemy {0}/{1}", Game.Self.Units.Count, Game.Enemy.Units.Count);
+            Game.DrawTextScreen(5, 20, "Match #{0}", matchNumber);
+            if(trainingMode)
+            {
+                Game.DrawTextScreen(5, 30, "Training Mode");
+            }
+            else
+            {
+                Game.DrawTextScreen(5, 30, "Execution Mode");
+            }
         }
         #endregion
 
