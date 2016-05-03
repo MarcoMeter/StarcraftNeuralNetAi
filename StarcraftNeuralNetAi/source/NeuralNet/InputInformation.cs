@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NeuralNetTraining.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,25 +13,26 @@ namespace NeuralNetTraining
     {
         #region Member
         // Known by SquadSupervisor
-        private int squadHitPoints;
-        private int squadCount;
+        private double squadHitPoints;
+        private double squadCount;
         private double squadDpf;
-        private int enemySquadHitPoints;
-        private int enemySquadCount;
+        private double enemySquadHitPoints;
+        private double enemySquadCount;
         private double enenmyDpf;
         // Known by CombatUnitTrainingBehavior
-        private int localHitPoints;
+        private double localHitPoints;
         private double localDpf;
+        private bool isCompleted = false;
         #endregion
 
         #region Constructor
         public InputInformation(int squadHP, int squadCount, double squadDpf, int enemySquadHP, int enemySquadCount, double enemyDpf)
         {
-            this.squadHitPoints = squadHP;
-            this.squadCount = squadCount;
+            this.squadHitPoints = (double)squadHP;
+            this.squadCount = (double)squadCount;
             this.squadDpf = squadDpf;
-            this.enemySquadHitPoints = enemySquadHP;
-            this.enemySquadCount = enemySquadCount;
+            this.enemySquadHitPoints = (double)enemySquadHP;
+            this.enemySquadCount = (double)enemySquadCount;
             this.enenmyDpf = enemyDpf;
         }
         #endregion
@@ -42,7 +44,7 @@ namespace NeuralNetTraining
         /// <returns>Normalized array of input information for the neural net.</returns>
         public double[] GetNormalizedData()
         {
-            return new double[] {squadHitPoints / 400, squadCount / 10, squadDpf / 7.5, enemySquadHitPoints / 400, enemySquadCount / 10, enenmyDpf / 7.5, localHitPoints / 40, localDpf / 0.75};
+            return new double[] {squadHitPoints / 400, squadCount / 10, squadDpf / 3.75, enemySquadHitPoints / 400, enemySquadCount / 10, enenmyDpf / 3.75, localHitPoints / 40, localDpf / 0.375};
         }
 
         /// <summary>
@@ -55,8 +57,9 @@ namespace NeuralNetTraining
         /// <param name="isStimmed">Is the combat unit on the effect caused by the Stimpack?</param>
         public void CompleteInputData(int hitPoints, double dpf)
         {
-            this.localHitPoints = hitPoints;
+            this.localHitPoints = (double)hitPoints;
             this.localDpf = dpf;
+            this.isCompleted = true;
         }
 
         // Getter
@@ -67,7 +70,7 @@ namespace NeuralNetTraining
         /// <returns>Returns all normalized friendly values as array.</returns>
         public double[] GetFriendlyInfo()
         {
-            return new double[] {squadHitPoints / 400, squadCount / 10, squadDpf / 7.5, localHitPoints / 40, localDpf / 0.75};
+            return new double[] {squadHitPoints / 400, squadCount / 10, squadDpf / 3.75, localHitPoints / 40, localDpf / 0.375};
         }
 
         /// <summary>
@@ -76,7 +79,12 @@ namespace NeuralNetTraining
         /// <returns>Returns all normalized enemy values as array.</returns>
         public double[] GetEnemyInfo()
         {
-            return new double[] {enemySquadHitPoints / 400, enemySquadCount / 10, enenmyDpf / 7.5};
+            return new double[] {enemySquadHitPoints / 400, enemySquadCount / 10, enenmyDpf / 3.75};
+        }
+
+        public bool IsCompleted()
+        {
+            return isCompleted;
         }
 
         public override String ToString()

@@ -19,7 +19,7 @@ namespace NeuralNetTraining
         private bool receivedHandshake = false;
         private bool sentHandshake = false;
         private string handshakeMessage = "Commencing Match Procedure! Training Mode: ";
-        private bool trainingMode = false;
+        private bool trainingMode = true;
         #endregion
 
         #region Events

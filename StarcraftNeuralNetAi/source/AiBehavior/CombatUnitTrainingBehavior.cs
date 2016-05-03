@@ -258,16 +258,22 @@ namespace NeuralNetTraining
         /// </summary>
         private void UseStimpack()
         {
-            if (!unit.IsStimmed)
+            if (stateFrameCount < 1)
             {
-                unit.UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
+                if (!unit.IsStimmed)
+                {
+                    unit.UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
+                }
+                stateFrameCount++;
             }
-
-            stateFrameCount = 0;
-            requestDecision = true;
-            if (trainingMode)
+            else
             {
-                neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                stateFrameCount = 0;
+                requestDecision = true;
+                if (trainingMode)
+                {
+                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                }
             }
         }
 
