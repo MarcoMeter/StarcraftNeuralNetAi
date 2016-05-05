@@ -72,7 +72,7 @@ namespace NeuralNetTraining
         public void ExecuteStateMachine()
         {
             // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
-            if (requestDecision)
+            if (requestDecision && squadSupervisor.GetEnemySquadCount() > 0)
             {
                 InputInformation inputInfo = GenerateInputInfo();   // request input information
                 double[] inputData = inputInfo.GetNormalizedData(); // normalize data
@@ -86,6 +86,7 @@ namespace NeuralNetTraining
                 else
                 {
                     newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
+                    PersistenceUtil.WriteLine(neuralNet.Compute(new BasicMLData(inputData)).ToString());
                 }              
 
                 // determine if a state transition is occuring
@@ -100,6 +101,10 @@ namespace NeuralNetTraining
                 }
 
                 requestDecision = false;
+            }
+            else if (squadSupervisor.GetEnemySquadCount() == 0)
+            {
+                currentState = CombatUnitState.SquadState;
             }
 
             // state execution
