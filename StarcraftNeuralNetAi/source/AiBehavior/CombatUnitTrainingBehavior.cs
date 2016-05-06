@@ -347,6 +347,10 @@ namespace NeuralNetTraining
         private void DrawUnitInfo()
         {
             Game.DrawTextMap(unit.Position.X, unit.Position.Y, "{0}", currentState.ToString());
+            if (unit.IsStimmed)
+            {
+                Game.DrawCircleMap(unit.Position.X, unit.Position.Y + 12, 2, Color.Red, true);
+            }
         }
 
         /// <summary>
