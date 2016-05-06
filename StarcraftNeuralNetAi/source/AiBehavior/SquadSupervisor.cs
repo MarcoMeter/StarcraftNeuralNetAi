@@ -3,6 +3,7 @@ using BroodWar;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
 using System.Linq;
+using NeuralNetTraining.Utility;
 
 namespace NeuralNetTraining
 {
@@ -15,6 +16,10 @@ namespace NeuralNetTraining
         private List<CombatUnitTrainingBehavior> combatUnits = new List<CombatUnitTrainingBehavior>();
         private List<Unit> enemyCombatUnits = new List<Unit>();
         private InputInformation globalInputInfo;
+        private int initialSquadHp = 0;
+        private int initialEnemySquadHp = 0;
+        private int initialSquadCount = 0;
+        private int initialEnemySquadCount = 0;
         #endregion
 
         #region Constructor
@@ -35,6 +40,8 @@ namespace NeuralNetTraining
         public void AddCombatUnit(CombatUnitTrainingBehavior unit)
         {
             combatUnits.Add(unit);
+            initialSquadHp += unit.GetUnit().HitPoints;
+            initialSquadCount++;
         }
 
         /// <summary>
@@ -44,6 +51,8 @@ namespace NeuralNetTraining
         public void AddEnemyCombatUnit(Unit unit)
         {
             enemyCombatUnits.Add(unit);
+            initialEnemySquadHp += unit.HitPoints;
+            initialEnemySquadCount++;
         }
 
         /// <summary>
@@ -259,7 +268,7 @@ namespace NeuralNetTraining
                 }
             }
 
-            InputInformation info = new InputInformation(squadHP, Game.Self.Units.Count, squadDpf,enemyHP, Game.Enemy.Units.Count, enemyDpf);
+            InputInformation info = new InputInformation(squadHP, initialSquadHp, Game.Self.Units.Count, initialSquadCount, squadDpf,enemyHP, initialEnemySquadHp, Game.Enemy.Units.Count, initialEnemySquadCount, enemyDpf);
             
             return info;
         }

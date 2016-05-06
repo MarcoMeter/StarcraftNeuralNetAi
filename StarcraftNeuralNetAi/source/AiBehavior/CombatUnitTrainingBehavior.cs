@@ -18,6 +18,7 @@ namespace NeuralNetTraining
     {
         #region Member
         private Unit unit;
+        private int initialHitPoints;
         private SquadSupervisor squadSupervisor;
         private NeuralNetController neuralNetController;
         private BasicNetwork neuralNet;
@@ -44,6 +45,7 @@ namespace NeuralNetTraining
             this.neuralNetController = NeuralNetController.GetInstance();
             this.neuralNet = neuralNetController.GetNeuralNet();
             this.trainingMode = trainingMode;
+            this.initialHitPoints = unit.HitPoints;
         }
         #endregion
 
@@ -86,7 +88,6 @@ namespace NeuralNetTraining
                 else
                 {
                     newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
-                    PersistenceUtil.WriteLine(neuralNet.Compute(new BasicMLData(inputData)).ToString());
                 }              
 
                 // determine if a state transition is occuring
@@ -365,11 +366,11 @@ namespace NeuralNetTraining
             // complete the inputInfo with local information
             if (unit.IsStimmed)
             {
-                info.CompleteInputData(unit.HitPoints, 0.75);
+                info.CompleteInputData(unit.HitPoints, initialHitPoints, 0.75);
             }
             else
             {
-                info.CompleteInputData(unit.HitPoints, 0.375);
+                info.CompleteInputData(unit.HitPoints, initialHitPoints, 0.375);
             }
 
             return info;
