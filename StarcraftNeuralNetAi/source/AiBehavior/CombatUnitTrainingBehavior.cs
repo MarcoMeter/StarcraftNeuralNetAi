@@ -218,7 +218,7 @@ namespace NeuralNetTraining
         {
             if (stateFrameCount < 7)
             {
-                SmartMove(squadSupervisor.GetEnemySquadCenter());
+                SmartMove(squadSupervisor.GetClosestEnemyUnit(this).Position);
                 stateFrameCount++;
             }
             else
@@ -239,10 +239,10 @@ namespace NeuralNetTraining
         {
             if (stateFrameCount < 7)
             {
-                Position enemySquadPos = squadSupervisor.GetEnemySquadCenter();
-                if (enemySquadPos != null)
+                Position closestEnemyPos = squadSupervisor.GetClosestEnemyUnit(this).Position;
+                if (closestEnemyPos != null)
                 {
-                    Position pos = squadSupervisor.GetEnemySquadCenter() - unit.Position;
+                    Position pos = closestEnemyPos - unit.Position;
                     SmartMove((pos * -1) + unit.Position);
                 }
                 stateFrameCount++;

@@ -51,7 +51,7 @@ namespace NeuralNetTraining
             double[] enemyFinal = final.GetEnemyInfo();
             double friendRatio = 0;
             double enemyRatio = 0;
-            int ratioCount = 0;
+            int ratioDataCount = 0;
 
             // compute friendly ratio
             for (int i = 0; i < friendlyFinal.Length; i++)
@@ -59,17 +59,16 @@ namespace NeuralNetTraining
                 if(friendlyInitial[i] > 0) // avoid division by 0
                 {
                     friendRatio += (friendlyFinal[i] / friendlyInitial[i]);
-                    ratioCount++;
+                    ratioDataCount++;
                 }
             }
 
-
-            if(friendlyFinal.Length > 0) // avoid division by 0
+            if(ratioDataCount > 0) // avoid division by 0
             {
-                friendRatio /= ratioCount;
+                friendRatio /= ratioDataCount;
             }
 
-            ratioCount = 0;
+            ratioDataCount = 0;
             
             // compute enemy ratio
             for(int i = 0; i < enemyFinal.Length; i++)
@@ -77,18 +76,17 @@ namespace NeuralNetTraining
                 if(enemyInitial[i] > 0) // avoid division by 0
                 {
                     enemyRatio += (enemyFinal[i] / enemyInitial[i]);
-                    ratioCount++;
+                    ratioDataCount++;
                 }
             }
 
-            if(enemyFinal.Length > 0) // avoid division by 0
+            if(ratioDataCount > 0) // avoid division by 0
             {
-                enemyRatio /= ratioCount;
+                enemyRatio /= ratioDataCount;
             }
 
             // desired and undesired output
             double desiredAdjustment = 1 + (friendRatio - enemyRatio);
-            double inverseAdjustment = 2 - desiredAdjustment;
 
             // convert output and make adjustments to the desired and undesired outputs
             double[] output = new double[computedOutput.Count];
@@ -100,12 +98,12 @@ namespace NeuralNetTraining
                 }
                 else
                 {
-                    output[i] = computedOutput[i] * inverseAdjustment;
+                    output[i] = computedOutput[i];
                 }
             }
 
             // create and return the data pair made of the initial input information and 
-            return new BasicMLDataPair(new BasicMLData(initialInfo.GetNormalizedData()), new BasicMLData(output)); ;
+            return new BasicMLDataPair(new BasicMLData(initialInfo.GetNormalizedData()), new BasicMLData(output));
         }
         #endregion
 
