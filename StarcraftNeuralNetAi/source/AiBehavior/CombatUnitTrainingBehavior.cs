@@ -26,6 +26,8 @@ namespace NeuralNetTraining
         private bool requestDecision = true;
         private CombatUnitState currentState = CombatUnitState.SquadState;
         private bool stateTransition = true;
+        private Unit currentTarget;
+        private int attackAnimationTime = 4;
         private int stateFrameCount = 0;
         private bool trainingMode;
         #endregion
@@ -40,70 +42,49 @@ namespace NeuralNetTraining
         public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor, bool trainingMode)
         {
             this.unit = unit;
+            this.initialHitPoints = unit.HitPoints;
             this.squadSupervisor = supervisor;
-            // Load the artificial neural network
             this.neuralNetController = NeuralNetController.GetInstance();
             this.neuralNet = neuralNetController.GetNeuralNet();
             this.trainingMode = trainingMode;
-            this.initialHitPoints = unit.HitPoints;
         }
         #endregion
 
         #region Public Functions
-        // Getter
+        /// <summary>
+        /// Request the most recent global input information and complete it with local data
+        /// </summary>
+        /// <returns>After completing the data, the data gets returned</returns>
+        public InputInformation GenerateInputInfo()
+        {
+            InputInformation info = squadSupervisor.GetGlobalInputInformation();
+            info.CompleteInputData(unit.HitPoints, initialHitPoints);
+            return info;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>Returns the paired unit to this behavior class.</returns>
         public Unit GetUnit()
         {
             return this.unit;
-        }
-
-        public SquadSupervisor GetSupervisor()
-        {
-            return this.squadSupervisor;
-        }
-
-        public CombatUnitState GetCurrentState()
-        {
-            return this.currentState;
         }
         #endregion
 
         #region Behavior Logic
         /// <summary>
-        /// This function is triggered by the SquadSupervirsor each frame. It processes the state machine for the actions and the decision making by the neural network.
+        /// OnFrame is triggered by the SquadSupervirsor each frame. It processes the state machine for the actions and the decision making by the neural network.
+        /// It also covers essential logics for generating training examples.
         /// </summary>
-        public void ExecuteStateMachine()
+        public void OnFrame()
         {
             // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
-            if (requestDecision && squadSupervisor.GetEnemySquadCount() > 0)
+            if (requestDecision && squadSupervisor.GetEnemyCount() > 0)
             {
-                InputInformation inputInfo = GenerateInputInfo();   // request input information
-                double[] inputData = inputInfo.GetNormalizedData(); // normalize data
-                CombatUnitState newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(6);      // determine random actio
-
-                if (trainingMode)
-                {
-                    IMLData outData = neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
-                    fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);          // initialize FitnessMeasure
-                }
-                else
-                {
-                    newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
-                }              
-
-                // determine if a state transition is occuring
-                if (newState != currentState)
-                {
-                    stateTransition = true;
-                    currentState = newState; // transition to new state
-                }
-                else
-                {
-                    stateTransition = false;
-                }
-
-                requestDecision = false;
+                MakeDecision();
             }
-            else if (squadSupervisor.GetEnemySquadCount() == 0)
+            else if (squadSupervisor.GetEnemyCount() == 0)
             {
                 currentState = CombatUnitState.SquadState;
             }
@@ -114,20 +95,11 @@ namespace NeuralNetTraining
                 case CombatUnitState.AttackClosest:
                     AttackClosest();
                     break;
-                case CombatUnitState.AttackStrongest:
-                    AttackStrongest();
-                    break;
-                case CombatUnitState.AttackWeakest:
-                    AttackWeakest();
-                    break;
                 case CombatUnitState.MoveTowards:
                     MoveTowards();
                     break;
                 case CombatUnitState.MoveBack:
                     MoveBack();
-                    break;
-                case CombatUnitState.UseStimpack:
-                    UseStimpack();
                     break;
                 case CombatUnitState.SquadState:
                     SquadState();
@@ -137,8 +109,71 @@ namespace NeuralNetTraining
                     break;
             }
 
-            // Some Debug Visualization
+            // Debug Visualization
             DrawUnitInfo();
+        }
+
+        /// <summary>
+        /// Executes the decision process by the neural network. In the context of generating training data, this function also handles gathering data for fitness logic.
+        /// </summary>
+        private void MakeDecision()
+        {
+            InputInformation inputInfo = GenerateInputInfo();   // request input information
+            double[] inputData = inputInfo.GetNormalizedData(); // normalize data
+            CombatUnitState newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(3);      // determine random action
+
+            if (trainingMode)
+            {
+                IMLData outData = neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
+                fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);          // initialize FitnessMeasure
+            }
+            else
+            {
+                PersistenceUtil.WriteLine(neuralNet.Compute(new BasicMLData(inputData)).ToString());
+                newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
+            }
+
+            // determine if a state transition is occuring
+            if (newState != currentState)
+            {
+                stateTransition = true;
+                currentState = newState; // transition to new state
+            }
+            else
+            {
+                stateTransition = false;
+            }
+
+            requestDecision = false;
+        }
+
+        public void AttackAction()
+        {
+            // Choose a new target based on a stateTransition or on the existence of the target
+            if (stateTransition || currentTarget == null)
+            {
+                currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+            }
+
+            // check if the attack animation has been completely executed
+            if (stateFrameCount < attackAnimationTime)
+            {
+                SmartAttack(currentTarget);
+                if (unit.IsInWeaponRange(currentTarget) && unit.GroundWeaponCooldown == 0)
+                {
+                    stateFrameCount++; // if the unit is in range and if the weapon isn't on cooldown, count the animation frames
+                }
+            }
+            else
+            {
+                stateFrameCount = 0;
+                requestDecision = true;
+                if (trainingMode)
+                {
+                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                    squadSupervisor.FindEnemyUnitBehavior(unit.Target).OnAttackLaunched(fitnessMeasure, this);
+                }
+            }
         }
 
         /// <summary>
@@ -146,7 +181,10 @@ namespace NeuralNetTraining
         /// </summary>
         private void SquadState()
         {
-
+            if (unit.LastCommand.Type != UnitCommandType.HoldPosition)
+            {
+                unit.HoldPosition(false);
+            }
         }
 
         /// <summary>
@@ -156,58 +194,21 @@ namespace NeuralNetTraining
         {
             if (stateFrameCount < 4)
             {
-                SmartAttack(squadSupervisor.GetClosestEnemyUnit(this));
-                stateFrameCount++;
-            }
-            else
-            {
-                stateFrameCount = 0;
-                requestDecision = true;
-                if (trainingMode)
+                Unit target = squadSupervisor.GetClosestEnemyUnit(this);
+                SmartAttack(target);
+                if (unit.IsInWeaponRange(target) && unit.GroundWeaponCooldown == 0)
                 {
-                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                    stateFrameCount++;
                 }
             }
-        }
-
-        /// <summary>
-        /// Attack the strongest enemy unit.
-        /// </summary>
-        private void AttackStrongest()
-        {
-            if (stateFrameCount < 4)
-            {
-                SmartAttack(squadSupervisor.GetStrongestEnemyUnit());
-                stateFrameCount++;
-            }
             else
             {
                 stateFrameCount = 0;
                 requestDecision = true;
                 if (trainingMode)
                 {
-                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Attack the weakest enemy unit. Being weak depends on all the properties of a unit. So a valueable unit being low on health is considered to be weak compared to a cheap unit with full health.
-        /// </summary>
-        private void AttackWeakest()
-        {
-            if (stateFrameCount < 4)
-            {
-                SmartAttack(squadSupervisor.GetWeakestEnemyUnit());
-                stateFrameCount++;
-            }
-            else
-            {
-                stateFrameCount = 0;
-                requestDecision = true;
-                if (trainingMode)
-                {
-                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                    //squadSupervisor.FindEnemyUnitBehavior(unit.Target).OnAttackLaunched(fitnessMeasure, this);
                 }
             }
         }
@@ -219,7 +220,7 @@ namespace NeuralNetTraining
         {
             if (stateFrameCount < 7)
             {
-                SmartMove(squadSupervisor.GetClosestEnemyUnit(this).Position);
+                SmartMove(squadSupervisor.GetClosestEnemyUnit(this).Position * 2);
                 stateFrameCount++;
             }
             else
@@ -228,7 +229,7 @@ namespace NeuralNetTraining
                 requestDecision = true;
                 if (trainingMode)
                 {
-                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
                 }
             }
         }
@@ -244,7 +245,7 @@ namespace NeuralNetTraining
                 if (closestEnemyPos != null)
                 {
                     Position pos = closestEnemyPos - unit.Position;
-                    SmartMove((pos * -1) + unit.Position);
+                    SmartMove((pos * -2) + unit.Position);
                 }
                 stateFrameCount++;
             }
@@ -254,31 +255,7 @@ namespace NeuralNetTraining
                 requestDecision = true;
                 if (trainingMode)
                 {
-                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Use stimpack. That's basically a one frame command.
-        /// </summary>
-        private void UseStimpack()
-        {
-            if (stateFrameCount < 1)
-            {
-                if (!unit.IsStimmed)
-                {
-                    unit.UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
-                }
-                stateFrameCount++;
-            }
-            else
-            {
-                stateFrameCount = 0;
-                requestDecision = true;
-                if (trainingMode)
-                {
-                    neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
+                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
                 }
             }
         }
@@ -352,28 +329,6 @@ namespace NeuralNetTraining
             {
                 Game.DrawCircleMap(unit.Position.X, unit.Position.Y + 12, 2, Color.Red, true);
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        private InputInformation GenerateInputInfo()
-        {
-            // request most recent global input information
-            InputInformation info = squadSupervisor.GetGlobalInputInformation();
-
-            // complete the inputInfo with local information
-            if (unit.IsStimmed)
-            {
-                info.CompleteInputData(unit.HitPoints, initialHitPoints, 0.75);
-            }
-            else
-            {
-                info.CompleteInputData(unit.HitPoints, initialHitPoints, 0.375);
-            }
-
-            return info;
         }
         #endregion
     }

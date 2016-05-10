@@ -38,7 +38,7 @@ namespace NeuralNetTraining.Utility
             // Create a new subfolder for the session
             if (!isSubDirLogsInit)
             {
-                subDirLogs = basePathLogs + @"\player" + Game.Self.Id.ToString() + "_" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff");
+                subDirLogs = basePathLogs + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff") + "_player" + Game.Self.Id.ToString();
                 Directory.CreateDirectory(subDirLogs);
                 isSubDirLogsInit = true;
             }
@@ -101,7 +101,7 @@ namespace NeuralNetTraining.Utility
             // Create a new subfolder for the session
             if (!isSubDirNetsInit)
             {
-                subDirNets = basePathNets + @"\player" + Game.Self.Id.ToString() + "_" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff");
+                subDirNets = basePathNets + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff") + "_player" + Game.Self.Id.ToString();
                 Directory.CreateDirectory(subDirNets);
                 isSubDirNetsInit = true;
             }

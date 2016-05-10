@@ -24,8 +24,8 @@ namespace NeuralNetTraining
         private BasicMLDataSet dataSet = new BasicMLDataSet();
         private BasicNetwork neuralNet;
         private Backpropagation trainer;
-        private double learningRate = 0.7;
-        private double momentum = 0.3;
+        private double learningRate = 0.1;
+        private double momentum = 0.1;
         #endregion
 
         #region Constructor
@@ -41,10 +41,9 @@ namespace NeuralNetTraining
             if(this.neuralNet == null)
             {
                 this.neuralNet = new BasicNetwork();
-                this.neuralNet.AddLayer(new BasicLayer(null, true, 8));
-                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
-                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 32));
-                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 6));
+                this.neuralNet.AddLayer(new BasicLayer(null, true, 2));
+                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 10));
+                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 3));
                 this.neuralNet.Structure.FinalizeStructure();
                 this.neuralNet.Reset();
             }
@@ -89,16 +88,18 @@ namespace NeuralNetTraining
         /// </summary>
         public void ExecuteTraining()
         {
-            trainer = new Backpropagation(neuralNet, dataSet, learningRate, momentum);
-            trainer.Iteration();
-            trainer.FinishTraining();
-            dataSet = new BasicMLDataSet();
-            PersistenceUtil.SaveNeuralNet(neuralNet);
+            if (dataSet.Count > 0)
+            {
+                trainer = new Backpropagation(neuralNet, dataSet, learningRate, momentum);
+                trainer.Iteration();
+                trainer.FinishTraining();
+                dataSet = new BasicMLDataSet();
+                PersistenceUtil.SaveNeuralNet(neuralNet);
+            }
         }
         #endregion
 
         #region Local Functions
-
         #endregion
     }
 }

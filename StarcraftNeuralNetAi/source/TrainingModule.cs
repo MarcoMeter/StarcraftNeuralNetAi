@@ -115,7 +115,7 @@ namespace NeuralNetTraining
         {
             foreach(Unit unit in Game.Self.Units)
             {
-                squadSupervisor.AddCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor, trainingMode));
+                squadSupervisor.AddFriendlyCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor, trainingMode));
             }
         }
 
@@ -126,7 +126,7 @@ namespace NeuralNetTraining
         {
             foreach (Unit unit in Game.Enemy.Units)
             {
-                squadSupervisor.AddEnemyCombatUnit(unit);
+                squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, squadSupervisor));
             }
         }
 

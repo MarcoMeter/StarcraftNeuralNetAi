@@ -13,8 +13,8 @@ namespace NeuralNetTraining
     public class SquadSupervisor
     {
         #region Member
-        private List<CombatUnitTrainingBehavior> combatUnits = new List<CombatUnitTrainingBehavior>();
-        private List<Unit> enemyCombatUnits = new List<Unit>();
+        private List<CombatUnitTrainingBehavior> friendlyCombatUnits = new List<CombatUnitTrainingBehavior>();
+        private List<EnemyFeedbackBehavior> enemyCombatUnits = new List<EnemyFeedbackBehavior>();
         private InputInformation globalInputInfo;
         private int initialSquadHp = 0;
         private int initialEnemySquadHp = 0;
@@ -37,9 +37,9 @@ namespace NeuralNetTraining
         /// Add controlled combat units to the list of the SquadSupervisor.
         /// </summary>
         /// <param name="unit">friendly combat units</param>
-        public void AddCombatUnit(CombatUnitTrainingBehavior unit)
+        public void AddFriendlyCombatUnit(CombatUnitTrainingBehavior unit)
         {
-            combatUnits.Add(unit);
+            friendlyCombatUnits.Add(unit);
             initialSquadHp += unit.GetUnit().HitPoints;
             initialSquadCount++;
         }
@@ -48,44 +48,67 @@ namespace NeuralNetTraining
         /// Add enemy combat units to the list of the SquadSupervisor.
         /// </summary>
         /// <param name="unit">enemy combat units</param>
-        public void AddEnemyCombatUnit(Unit unit)
+        public void AddEnemyCombatUnit(EnemyFeedbackBehavior unit)
         {
             enemyCombatUnits.Add(unit);
-            initialEnemySquadHp += unit.HitPoints;
+            initialEnemySquadHp += unit.GetUnit().HitPoints;
             initialEnemySquadCount++;
         }
 
         /// <summary>
-        /// This is a test AttackMove for the whole squad towards some position.
+        /// Search through the friendly combat unit list to find the paired behavior to the unit.
         /// </summary>
-        /// <param name="targetPosition">Attack target position</param>
-        public void ForceAttack(Position targetPosition, bool useStimpack)
+        /// <param name="unit">The unit to search for.</param>
+        /// <returns>Returns the CombatTrainingBehavior for that certain unit to seek for.</returns>
+        public CombatUnitTrainingBehavior FindFriendlyUnitBehavior(Unit unit)
         {
-            foreach(CombatUnitTrainingBehavior unit in combatUnits)
+            // find unit in behavior list
+            for (int i = 0; i < friendlyCombatUnits.Count; i++)
             {
-                unit.GetUnit().Attack(targetPosition, false);
-                if (useStimpack)
+                if (unit == friendlyCombatUnits[i].GetUnit())
                 {
-                    unit.GetUnit().UseTech(new Tech(TechType.Stim_Packs.GetHashCode()));
+                    return friendlyCombatUnits[i];
                 }
             }
+
+            return null; 
         }
+
+        /// <summary>
+        /// Search through the enemy combat unit list to find the paired behavior to the unit.
+        /// </summary>
+        /// <param name="unit">The unit to search for.</param>
+        /// <returns>Returns the EnemyFeedbackBehavior for that certain unit to seek for.</returns>
+        public EnemyFeedbackBehavior FindEnemyUnitBehavior(Unit unit)
+        {
+            // find unit in behavior list
+            for (int i = 0; i < enemyCombatUnits.Count; i++)
+            {
+                if (unit == enemyCombatUnits[i].GetUnit())
+                {
+                    return enemyCombatUnits[i];
+                }
+            }
+
+            return null;
+        }
+
 
         // Getter
         /// <summary>
         /// Returns the count of all controlled combat units.
         /// </summary>
         /// <returns>Returns the count of controlled combat units.</returns>
-        public int GetSquadCount()
+        public int GetFriendlyCount()
         {
-            return combatUnits.Count;
+            return friendlyCombatUnits.Count;
         }
 
         /// <summary>
         /// Returns the count of all enemy combat units.
         /// </summary>
         /// <returns>Returns the count of enemy combat units.</returns>
-        public int GetEnemySquadCount()
+        public int GetEnemyCount()
         {
             return enemyCombatUnits.Count;
         }
@@ -110,13 +133,13 @@ namespace NeuralNetTraining
             double distance = 100000;
 
             // loop through all enemy units and search for the closest one
-            foreach(Unit unit in enemyCombatUnits)
+            foreach(EnemyFeedbackBehavior unit in enemyCombatUnits)
             {
-                double tempDistance = unit.Distance(requestingUnit.GetUnit());
+                double tempDistance = unit.GetUnit().Distance(requestingUnit.GetUnit());
 
                 if(tempDistance < distance)
                 {
-                    closestUnit = unit;
+                    closestUnit = unit.GetUnit();
                     distance = tempDistance;
                 }
             }
@@ -127,11 +150,11 @@ namespace NeuralNetTraining
         /// Find the strongest enemy unit. For now this is based on the unit's hit points.
         /// </summary>
         /// <returns>Returns the strongest enemy combat unit to the requesting controlled combat unit.</returns>
-        public Unit GetStrongestEnemyUnit()
+        public EnemyFeedbackBehavior GetStrongestEnemyUnit()
         {
             if (enemyCombatUnits.Count > 0)
             {
-                List<Unit> sortedByHitPoints = enemyCombatUnits.OrderBy(u => u.HitPoints).ToList();
+                List<EnemyFeedbackBehavior> sortedByHitPoints = enemyCombatUnits.OrderBy(u => u.GetUnit().HitPoints).ToList();
                 return sortedByHitPoints[0];
             }
             else
@@ -144,11 +167,11 @@ namespace NeuralNetTraining
         /// Find the weakest enemy unit. So far this is based on hit points.
         /// </summary>
         /// <returns>Returns the weakest enemy combat unit to the requesting controlled combat unit.</returns>
-        public Unit GetWeakestEnemyUnit()
+        public EnemyFeedbackBehavior GetWeakestEnemyUnit()
         {
             if (enemyCombatUnits.Count > 0)
             {
-                List<Unit> sortedByHitPoints = enemyCombatUnits.OrderByDescending(u => u.HitPoints).ToList();
+                List<EnemyFeedbackBehavior> sortedByHitPoints = enemyCombatUnits.OrderByDescending(u => u.GetUnit().HitPoints).ToList();
                 return sortedByHitPoints[0];
             }
             else
@@ -166,10 +189,10 @@ namespace NeuralNetTraining
             int x = 0;
             int y = 0;
 
-            foreach(Unit unit in enemyCombatUnits)
+            foreach(EnemyFeedbackBehavior unit in enemyCombatUnits)
             {
-                x += unit.Position.X;
-                y += unit.Position.Y;
+                x += unit.GetUnit().Position.X;
+                y += unit.GetUnit().Position.Y;
             }
 
             if (enemyCombatUnits.Count > 0)
@@ -196,9 +219,13 @@ namespace NeuralNetTraining
             globalInputInfo = GatherRawInputData();
 
             // trigger on frame on the individual ai units
-            foreach (CombatUnitTrainingBehavior combatUnit in combatUnits)
+            foreach (CombatUnitTrainingBehavior friendlyCombatUnits in friendlyCombatUnits)
             {
-                combatUnit.ExecuteStateMachine();
+                friendlyCombatUnits.OnFrame();
+            }
+            foreach(EnemyFeedbackBehavior enemyComabtUnit in enemyCombatUnits)
+            {
+                enemyComabtUnit.OnFrame();
             }
         }
 
@@ -207,21 +234,14 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnUnitDestroy(Unit destroyedUnit)
         {
-            // Update enemy combat unit list
-            if(destroyedUnit.Player.Id != Game.Self.Id)
+            // Update friendly or enemy combat unit list
+            if (destroyedUnit.Player.Id != Game.Self.Id)
             {
-                enemyCombatUnits.RemoveAt(enemyCombatUnits.IndexOf(destroyedUnit));
+                enemyCombatUnits.Remove(FindEnemyUnitBehavior(destroyedUnit));
             }
             else
             {
-                // Update controlled combat units list
-                for(int i = 0; i < combatUnits.Count; i++)
-                {
-                    if(destroyedUnit == combatUnits[i].GetUnit())
-                    {
-                        combatUnits.RemoveAt(i);
-                    }
-                }
+                friendlyCombatUnits.Remove(FindFriendlyUnitBehavior(destroyedUnit));
             }
         }
         #endregion
@@ -233,42 +253,15 @@ namespace NeuralNetTraining
         /// <returns>An incomplete InputInformation, which only consists of global input information, is returned.</returns>
         private InputInformation GatherRawInputData()
         {
-            int squadHP = 0;
             int enemyHP = 0;
-            double squadDpf = 0;
-            double enemyDpf = 0;
-
-            // gather information concerning the friendly squad
-            foreach (CombatUnitTrainingBehavior unit in combatUnits)
-            {
-                squadHP += unit.GetUnit().HitPoints;
-                // determine overall dpf
-                if(unit.GetUnit().IsStimmed)
-                {
-                    squadDpf += 0.75;
-                }
-                else
-                {
-                    squadDpf += 0.375;
-                }
-            }
 
             // gather information concerning the enemy squad
-            foreach (Unit unit in enemyCombatUnits)
+            foreach (EnemyFeedbackBehavior unit in enemyCombatUnits)
             {
-                enemyHP += unit.HitPoints;
-                // determine overall dpf
-                if (unit.IsStimmed)
-                {
-                    enemyDpf += 0.75;
-                }
-                else
-                {
-                    enemyDpf += 0.375;
-                }
+                enemyHP += unit.GetUnit().HitPoints;
             }
 
-            InputInformation info = new InputInformation(squadHP, initialSquadHp, Game.Self.Units.Count, initialSquadCount, squadDpf,enemyHP, initialEnemySquadHp, Game.Enemy.Units.Count, initialEnemySquadCount, enemyDpf);
+            InputInformation info = new InputInformation(enemyHP, initialEnemySquadHp);
             
             return info;
         }

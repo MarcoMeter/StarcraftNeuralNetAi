@@ -53,6 +53,13 @@ namespace NeuralNetTraining
             double enemyRatio = 0;
             int ratioDataCount = 0;
 
+            PersistenceUtil.WriteLine("<<< START FITNESS >>>");
+            PersistenceUtil.WriteLine("Random Action : " + (int)randomOutput + " " + randomOutput.ToString());
+            PersistenceUtil.WriteLine("Initial Friend: " + String.Join(",", friendlyInitial.Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("Initial Enemy : " + String.Join(",", enemyInitial.Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("Final   Friend: " + String.Join(",", friendlyFinal.Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("Final   Enemy : " + String.Join(",", enemyFinal.Select(p => p.ToString()).ToArray()));
+
             // compute friendly ratio
             for (int i = 0; i < friendlyFinal.Length; i++)
             {
@@ -68,6 +75,7 @@ namespace NeuralNetTraining
                 friendRatio /= ratioDataCount;
             }
 
+            PersistenceUtil.WriteLine("Ratio   Friend: " + friendRatio);
             ratioDataCount = 0;
             
             // compute enemy ratio
@@ -85,8 +93,13 @@ namespace NeuralNetTraining
                 enemyRatio /= ratioDataCount;
             }
 
+            PersistenceUtil.WriteLine("Ratio   Enemy : " + enemyRatio);
+
             // desired and undesired output
             double desiredAdjustment = 1 + (friendRatio - enemyRatio);
+
+            PersistenceUtil.WriteLine("Adjustment    : " + desiredAdjustment);
+            PersistenceUtil.WriteLine("Computed Output: " + computedOutput.ToString());
 
             // convert output and make adjustments to the desired and undesired outputs
             double[] output = new double[computedOutput.Count];
@@ -103,7 +116,14 @@ namespace NeuralNetTraining
             }
 
             // create and return the data pair made of the initial input information and 
-            return new BasicMLDataPair(new BasicMLData(initialInfo.GetNormalizedData()), new BasicMLData(output));
+            BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(initialInfo.GetNormalizedData()), new BasicMLData(output));
+            PersistenceUtil.WriteLine("Desired Output : " + pair.Ideal.ToString());
+            if((randomOutput == CombatUnitState.MoveBack || randomOutput == CombatUnitState.MoveTowards) && desiredAdjustment > 1)
+            {
+                PersistenceUtil.WriteLine("ERROR!!!!!!! : Movement can't be considered to be good. The result of an attack messed this up!!!!");
+            }
+            PersistenceUtil.WriteLine("<<< END FITNESS >>>");
+            return pair;
         }
         #endregion
 
