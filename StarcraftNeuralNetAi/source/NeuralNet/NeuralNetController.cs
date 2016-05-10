@@ -94,6 +94,7 @@ namespace NeuralNetTraining
                 trainer.Iteration();
                 trainer.FinishTraining();
                 dataSet = new BasicMLDataSet();
+                PersistenceUtil.WriteLine("ERROR Rate : " + trainer.Error);
                 PersistenceUtil.SaveNeuralNet(neuralNet);
             }
         }

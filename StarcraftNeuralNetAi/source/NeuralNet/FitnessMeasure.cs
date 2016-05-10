@@ -15,6 +15,7 @@ namespace NeuralNetTraining
     {
         #region Member
         private InputInformation initialInfo;
+        private InputInformation midInfo;
         private CombatUnitState randomOutput;
         private IMLData computedOutput;
         #endregion
@@ -36,6 +37,11 @@ namespace NeuralNetTraining
         #endregion
 
         #region Public Functions
+        public void AddMidInfo(InputInformation info)
+        {
+            this.midInfo = info;
+        }
+
         /// <summary>
         /// Before an action is being executed, the FitnessMeasure is already initialized with some initial data.
         /// In order to complete the measure of how good that action was, the final state (after executing an action) has to be supplied.
@@ -46,8 +52,8 @@ namespace NeuralNetTraining
         public BasicMLDataPair ComputeDataPair(InputInformation final)
         {
             double[] friendlyInitial = initialInfo.GetFriendlyInfo();
-            double[] enemyInitial = initialInfo.GetEnemyInfo();
-            double[] friendlyFinal = final.GetFriendlyInfo();
+            double[] enemyInitial = midInfo.GetEnemyInfo();
+            double[] friendlyFinal = midInfo.GetFriendlyInfo();
             double[] enemyFinal = final.GetEnemyInfo();
             double friendRatio = 0;
             double enemyRatio = 0;
@@ -118,10 +124,6 @@ namespace NeuralNetTraining
             // create and return the data pair made of the initial input information and 
             BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(initialInfo.GetNormalizedData()), new BasicMLData(output));
             PersistenceUtil.WriteLine("Desired Output : " + pair.Ideal.ToString());
-            if((randomOutput == CombatUnitState.MoveBack || randomOutput == CombatUnitState.MoveTowards) && desiredAdjustment > 1)
-            {
-                PersistenceUtil.WriteLine("ERROR!!!!!!! : Movement can't be considered to be good. The result of an attack messed this up!!!!");
-            }
             PersistenceUtil.WriteLine("<<< END FITNESS >>>");
             return pair;
         }

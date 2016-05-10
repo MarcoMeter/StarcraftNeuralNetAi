@@ -17,6 +17,8 @@ namespace NeuralNetTraining
         private NeuralNetController neuralNetController;
         private List<CombatUnitTrainingBehavior> attackers = new List<CombatUnitTrainingBehavior>();
         private List<FitnessMeasure> attackersFitness = new List<FitnessMeasure>();
+        private bool isExpectingFeedback = false;
+        private bool trainingMode;
         #endregion
 
         /// <summary>
@@ -25,12 +27,13 @@ namespace NeuralNetTraining
         /// <param name="unit"></param>
         /// <param name="supervisor"></param>
         #region Constructor
-        public EnemyFeedbackBehavior(Unit unit, SquadSupervisor supervisor)
+        public EnemyFeedbackBehavior(Unit unit, SquadSupervisor supervisor, bool trainingMode)
         {
             this.unit = unit;
             this.hitPoints = unit.HitPoints;
             this.squadSupervisor = supervisor;
             this.neuralNetController = NeuralNetController.GetInstance();
+            this.trainingMode = trainingMode;
         }
         #endregion
 
@@ -39,6 +42,7 @@ namespace NeuralNetTraining
         {
             attackers.Add(friendlyUnit);
             attackersFitness.Add(fitnessMeasure);
+            isExpectingFeedback = true;
         }
         // Getter
         public Unit GetUnit()
@@ -58,18 +62,22 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnFrame()
         {
-            // check if damage is taken
-            if(unit.HitPoints < hitPoints)
+            if (isExpectingFeedback && trainingMode)
             {
-                PersistenceUtil.WriteLine("Enemy took damage, computing feedback");
-                int totalDamage = hitPoints - unit.HitPoints;
-                if (attackers.Count > 0)
+                // check if damage is taken
+                if (unit.HitPoints < hitPoints)
                 {
-                    neuralNetController.AddTrainingDataPair(attackersFitness[0].ComputeDataPair(attackers[0].GenerateInputInfo()));
-                    attackers.RemoveAt(0);
-                    attackersFitness.RemoveAt(0);
+                    PersistenceUtil.WriteLine("Enemy took damage, computing feedback");
+                    int totalDamage = hitPoints - unit.HitPoints;
+                    if (attackers.Count > 0)
+                    {
+                        neuralNetController.AddTrainingDataPair(attackersFitness[0].ComputeDataPair(attackers[0].GenerateInputInfo()));
+                        attackers.RemoveAt(0);
+                        attackersFitness.RemoveAt(0);
+                    }
+                    hitPoints = unit.HitPoints;
                 }
-                hitPoints = unit.HitPoints;
+                isExpectingFeedback = false;
             }
         }
         #endregion

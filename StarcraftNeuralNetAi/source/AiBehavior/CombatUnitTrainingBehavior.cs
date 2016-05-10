@@ -89,24 +89,14 @@ namespace NeuralNetTraining
                 currentState = CombatUnitState.SquadState;
             }
 
-            // state execution
-            switch (currentState)
+            // state execution, the states will determine which target to go for
+            if (currentState == CombatUnitState.SquadState)
             {
-                case CombatUnitState.AttackClosest:
-                    AttackClosest();
-                    break;
-                case CombatUnitState.MoveTowards:
-                    MoveTowards();
-                    break;
-                case CombatUnitState.MoveBack:
-                    MoveBack();
-                    break;
-                case CombatUnitState.SquadState:
-                    SquadState();
-                    break;
-                case CombatUnitState.Retreat:
-                    Retreat();
-                    break;
+                SquadState();
+            }
+            else
+            {
+                AttackAction();
             }
 
             // Debug Visualization
@@ -147,12 +137,27 @@ namespace NeuralNetTraining
             requestDecision = false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void AttackAction()
         {
             // Choose a new target based on a stateTransition or on the existence of the target
             if (stateTransition || currentTarget == null)
             {
-                currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+                // Find a target based on the current state
+                switch(currentState)
+                {
+                    case CombatUnitState.AttackClosest:
+                        currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+                        break;
+                    case CombatUnitState.AttackWeakest:
+                        currentTarget = squadSupervisor.GetWeakestEnemyUnit();
+                        break;
+                    case CombatUnitState.AttackMostValuable:
+                        currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+                        break;
+                }
             }
 
             // check if the attack animation has been completely executed
@@ -166,6 +171,7 @@ namespace NeuralNetTraining
             }
             else
             {
+                fitnessMeasure.AddMidInfo(GenerateInputInfo());
                 stateFrameCount = 0;
                 requestDecision = true;
                 if (trainingMode)
@@ -184,79 +190,6 @@ namespace NeuralNetTraining
             if (unit.LastCommand.Type != UnitCommandType.HoldPosition)
             {
                 unit.HoldPosition(false);
-            }
-        }
-
-        /// <summary>
-        /// Attack the closest enemy unit.
-        /// </summary>
-        private void AttackClosest()
-        {
-            if (stateFrameCount < 4)
-            {
-                Unit target = squadSupervisor.GetClosestEnemyUnit(this);
-                SmartAttack(target);
-                if (unit.IsInWeaponRange(target) && unit.GroundWeaponCooldown == 0)
-                {
-                    stateFrameCount++;
-                }
-            }
-            else
-            {
-                stateFrameCount = 0;
-                requestDecision = true;
-                if (trainingMode)
-                {
-                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
-                    //squadSupervisor.FindEnemyUnitBehavior(unit.Target).OnAttackLaunched(fitnessMeasure, this);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Move towards the center of the enemy's squad.
-        /// </summary>
-        private void MoveTowards()
-        {
-            if (stateFrameCount < 7)
-            {
-                SmartMove(squadSupervisor.GetClosestEnemyUnit(this).Position * 2);
-                stateFrameCount++;
-            }
-            else
-            {
-                stateFrameCount = 0;
-                requestDecision = true;
-                if (trainingMode)
-                {
-                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Back up from enemy.
-        /// </summary>
-        private void MoveBack()
-        {
-            if (stateFrameCount < 7)
-            {
-                Position closestEnemyPos = squadSupervisor.GetClosestEnemyUnit(this).Position;
-                if (closestEnemyPos != null)
-                {
-                    Position pos = closestEnemyPos - unit.Position;
-                    SmartMove((pos * -2) + unit.Position);
-                }
-                stateFrameCount++;
-            }
-            else
-            {
-                stateFrameCount = 0;
-                requestDecision = true;
-                if (trainingMode)
-                {
-                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
-                }
             }
         }
 

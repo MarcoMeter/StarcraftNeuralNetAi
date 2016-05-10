@@ -53,7 +53,7 @@ namespace NeuralNetTraining
         /// </summary>
         public override void OnFrame()
         {
-            if (!isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count)
+            if (!isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count && Game.FrameCount > 5)
             {
                 InitializeEnemySquad(); // the enemy squad has to be initialized on the first frame, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
                 isEnemySquadInitialized = true;
@@ -126,7 +126,7 @@ namespace NeuralNetTraining
         {
             foreach (Unit unit in Game.Enemy.Units)
             {
-                squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, squadSupervisor));
+                squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, squadSupervisor, trainingMode));
             }
         }
 
@@ -137,7 +137,7 @@ namespace NeuralNetTraining
         {
             Game.DrawTextScreen(5, 0, "Player : {0}", Game.Self.Id);
             Game.DrawTextScreen(60, 0, "FPS : {0}", Game.Fps);
-            Game.DrawTextScreen(5, 10, "Me/Enemy {0}/{1}", Game.Self.Units.Count, Game.Enemy.Units.Count);
+            Game.DrawTextScreen(5, 10, "Me/Enemy {0}/{1}", squadSupervisor.GetFriendlyCount(), squadSupervisor.GetEnemyCount());
             Game.DrawTextScreen(5, 20, "Match #{0}", matchNumber);
             if(trainingMode)
             {
