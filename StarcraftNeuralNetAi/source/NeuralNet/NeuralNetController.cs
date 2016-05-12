@@ -21,7 +21,7 @@ namespace NeuralNetTraining
     {
         #region Member
         private static NeuralNetController instance;
-        private BasicMLDataSet dataSet = new BasicMLDataSet();
+        private BasicMLDataSet dataSet = new BasicMLDataSet(); // stores all the training examples of one match
         private BasicNetwork neuralNet;
         private Backpropagation trainer;
         private double learningRate = 0.1;
@@ -41,11 +41,11 @@ namespace NeuralNetTraining
             if(this.neuralNet == null)
             {
                 this.neuralNet = new BasicNetwork();
-                this.neuralNet.AddLayer(new BasicLayer(null, true, 2));
-                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 10));
-                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 3));
+                this.neuralNet.AddLayer(new BasicLayer(null, true, 2)); // Input layer
+                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 10)); // #1 hidden layer
+                this.neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 3)); // output layer
                 this.neuralNet.Structure.FinalizeStructure();
-                this.neuralNet.Reset();
+                this.neuralNet.Reset(); // initializes the weights of the neural net
             }
         }
         #endregion
@@ -84,14 +84,14 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// Starts iterating through the gathered training examples in order to train the neural net. This should be called as soon a match concludes (preferably by the SquadSupervisor).
+        /// Starts iterating through the gathered training examples in order to train the neural net. This should be called as soon as a match concludes.
         /// </summary>
         public void ExecuteTraining()
         {
             if (dataSet.Count > 0)
             {
                 trainer = new Backpropagation(neuralNet, dataSet, learningRate, momentum);
-                trainer.Iteration();
+                trainer.Iteration(); // iterating just once over the gathered data is required. That's because of the training examples will improve over time. The early produced examples aren't as ideal as the later ones.
                 trainer.FinishTraining();
                 dataSet = new BasicMLDataSet();
                 PersistenceUtil.WriteLine("ERROR Rate : " + trainer.Error);

@@ -22,6 +22,11 @@ namespace NeuralNetTraining
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Instantiates an input information object based on global input information.
+        /// </summary>
+        /// <param name="enemyHp">overall enemy combat units hit points</param>
+        /// <param name="initialEnemyHp">overall and initial enemy bombat units hit points</param>
         public InputInformation(int enemyHp, int initialEnemyHp)
         {
             this.enemyHitPoints = enemyHp;
@@ -31,7 +36,7 @@ namespace NeuralNetTraining
 
         #region Public Functions
         /// <summary>
-        /// This function normalizes all the stored information, so that it can be processed efficiently by the neural net.
+        /// Normalize the stored input information, so that it can be processed efficiently by the neural net.
         /// </summary>
         /// <returns>Normalized array of input information for the neural net.</returns>
         public double[] GetNormalizedData()
@@ -40,21 +45,16 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// After the SquadSupervisor initialized the global information, the individual AiCombatUnitBehavior has to add its local information in order to complete the InputInformation.
+        /// After the SquadSupervisor initialized the global information, the individual CombatUnitTrainingBehavior has to add its local information in order to complete the InputInformation.
         /// </summary>
-        /// <param name="hitPoints">Remaining hit points of the combat unit.</param>
-        /// <param name="weaponCooldown">Remaining cooldown till next attack.</param>
-        /// <param name="velocityX">The speed of the combat unit on the x-axis.</param>
-        /// <param name="velocityY">The speed of the combat unit on the y-axis.</param>
-        /// <param name="isStimmed">Is the combat unit on the effect caused by the Stimpack?</param>
+        /// <param name="hitPoints">current hit points of the friendly combat unit</param>
+        /// <param name="initialHitPoints">initial hit points of the friendly combat unit</param>
         public void CompleteInputData(int hitPoints, int initialHitPoints)
         {
             this.localHitPoints = (double)hitPoints;
             this.initialLocalHitPoints = (double)initialHitPoints;
             this.isCompleted = true;
         }
-
-        // Getter
 
         /// <summary>
         /// Each input information, which is supposed to be friendly, is getting normalized first and then returned.

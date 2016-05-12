@@ -6,8 +6,8 @@ using NeuralNetTraining.Utility;
 namespace NeuralNetTraining
 {
     /// <summary>
-    /// Entry point of the injected AI. AiBase implements several event listeners.
-    /// The TrainingModule supervises the training environment.
+    /// The TrainingModule is the entry point of the injected AI. AiBase implements several event listeners of the BWAPI.
+    /// The TrainingModule supervises the training environment on a match to match basis.
     /// </summary>
     public class TrainingModule : AiBase
     {
@@ -19,10 +19,10 @@ namespace NeuralNetTraining
         private bool receivedHandshake = false;
         private bool sentHandshake = false;
         private string handshakeMessage = "Commencing Match Procedure! Training Mode: ";
-        private bool trainingMode = true;
+        public static bool trainingMode = true;
         #endregion
 
-        #region Events
+        #region BWAPI Events
         /// <summary>
         /// Everything that needs to be done before the game starts, should be done inside OnStart(). Especially all members should be initialized in here due to automated matches.
         /// </summary>
@@ -42,6 +42,7 @@ namespace NeuralNetTraining
             neuralNetController = NeuralNetController.GetInstance();
             isEnemySquadInitialized = false;
             squadSupervisor = new SquadSupervisor();
+            // A handshake is used to check if both instances of StarCraft are ready. Due to the network delay (even on the local machine), the information about the enemy units isn't available right away
             receivedHandshake = false;
             sentHandshake = false;
 
@@ -55,16 +56,17 @@ namespace NeuralNetTraining
         {
             if (!isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count && Game.FrameCount > 5)
             {
-                InitializeEnemySquad(); // the enemy squad has to be initialized on the first frame, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
+                InitializeEnemySquad(); // the enemy squad has to be initialized on one of the first frames, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
                 isEnemySquadInitialized = true;
             }
 
             if(Game.FrameCount == 10)
             {
-                Game.SendText(handshakeMessage + trainingMode.ToString());
+                Game.SendText(handshakeMessage + trainingMode.ToString()); // trigger handshake
                 sentHandshake = true;
             }
 
+            // if the handshake test is passed, execute the essential logics for each frame
             if (receivedHandshake && sentHandshake)
             {
                 DrawOnScreen(); // draw several information on the screen
@@ -115,7 +117,7 @@ namespace NeuralNetTraining
         {
             foreach(Unit unit in Game.Self.Units)
             {
-                squadSupervisor.AddFriendlyCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor, trainingMode));
+                squadSupervisor.AddFriendlyCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor));
             }
         }
 
@@ -126,7 +128,7 @@ namespace NeuralNetTraining
         {
             foreach (Unit unit in Game.Enemy.Units)
             {
-                squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, squadSupervisor, trainingMode));
+                squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, squadSupervisor));
             }
         }
 
@@ -151,6 +153,10 @@ namespace NeuralNetTraining
         #endregion
 
         #region Public Functions
+        /// <summary>
+        /// The TrainingModule keeps track of the match count.
+        /// </summary>
+        /// <returns>Returns the current number of the match.</returns>
         public static int GetMatchNumber()
         {
             return matchNumber;

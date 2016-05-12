@@ -8,7 +8,8 @@ using NeuralNetTraining.Utility;
 namespace NeuralNetTraining
 {
     /// <summary>
-    /// The SquadSupervisor takes care of controlling all combat units. It pretty much assigns the goal to send units to combat.
+    /// The SquadSupervisor takes care of controlling and observing all friendly and enemy combat units.
+    /// Global input information is provided by the SquadSupervisor.
     /// </summary>
     public class SquadSupervisor
     {
@@ -24,7 +25,7 @@ namespace NeuralNetTraining
 
         #region Constructor
         /// <summary>
-        /// Creates an instance of the SquadSupervisor. Members are modified by public functions.
+        /// Creates an instance of the SquadSupervisor. Members are modified by public functions. Like the lists of enemy and friendly combat units.
         /// </summary>
         public SquadSupervisor()
         {
@@ -34,9 +35,9 @@ namespace NeuralNetTraining
 
         #region Public Functions
         /// <summary>
-        /// Add controlled combat units to the list of the SquadSupervisor.
+        /// Add friendly combat units to the list of the SquadSupervisor.
         /// </summary>
-        /// <param name="unit">friendly combat units</param>
+        /// <param name="unit">friendly combat unit</param>
         public void AddFriendlyCombatUnit(CombatUnitTrainingBehavior unit)
         {
             friendlyCombatUnits.Add(unit);
@@ -47,7 +48,7 @@ namespace NeuralNetTraining
         /// <summary>
         /// Add enemy combat units to the list of the SquadSupervisor.
         /// </summary>
-        /// <param name="unit">enemy combat units</param>
+        /// <param name="unit">enemy combat unit</param>
         public void AddEnemyCombatUnit(EnemyFeedbackBehavior unit)
         {
             enemyCombatUnits.Add(unit);
@@ -93,10 +94,8 @@ namespace NeuralNetTraining
             return null;
         }
 
-
-        // Getter
         /// <summary>
-        /// Returns the count of all controlled combat units.
+        /// Returns the count of all friendly combat units.
         /// </summary>
         /// <returns>Returns the count of controlled combat units.</returns>
         public int GetFriendlyCount()
@@ -207,10 +206,9 @@ namespace NeuralNetTraining
 
             return new Position(x, y);
         }
-        // Setter
         #endregion
 
-        #region Events
+        #region BWAPI Events
         /// <summary>
         /// OnFrame event which is triggered by the TrainingModule.
         /// </summary>

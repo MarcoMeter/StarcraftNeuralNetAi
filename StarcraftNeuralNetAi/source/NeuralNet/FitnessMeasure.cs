@@ -9,7 +9,8 @@ using System.Text;
 namespace NeuralNetTraining
 {
     /// <summary>
-    /// 
+    /// The fitness measure is based on a few state recordings. It compares the losses of the friendly units with enemy ones on different points in time. The result is used to favor or disfavor the executed action's output.
+    /// The utility of attack actions get evaluated this way.
     /// </summary>
     public class FitnessMeasure
     {
@@ -26,7 +27,7 @@ namespace NeuralNetTraining
         /// The actual fitness is measured after supplying the final state of the combat.
         /// </summary>
         /// <param name="initial">The initial input information, which was used to feed the neural net.</param>
-        /// <param name="randomAction">The chosen action by randim.</param>
+        /// <param name="randomAction">The chosen action by random.</param>
         /// <param name="computedOutput">The computed outputs by the neural net.</param>
         public FitnessMeasure(InputInformation initial, CombatUnitState randomAction, IMLData computedOutput)
         {
@@ -51,6 +52,7 @@ namespace NeuralNetTraining
         /// <returns>Returns a data pair based on the initial input and the computed desired output.</returns>
         public BasicMLDataPair ComputeDataPair(InputInformation final)
         {
+            // assign the state recordings
             double[] friendlyInitial = initialInfo.GetFriendlyInfo();
             double[] enemyInitial = midInfo.GetEnemyInfo();
             double[] friendlyFinal = midInfo.GetFriendlyInfo();
@@ -101,7 +103,7 @@ namespace NeuralNetTraining
 
             PersistenceUtil.WriteLine("Ratio   Enemy : " + enemyRatio);
 
-            // desired and undesired output
+            // compute the adjustment for the desired output
             double desiredAdjustment = 1 + (friendRatio - enemyRatio);
 
             PersistenceUtil.WriteLine("Adjustment    : " + desiredAdjustment);

@@ -39,14 +39,14 @@ namespace NeuralNetTraining
         /// <param name="unit">The individual combat unit which needs to be paired with this behavior.</param>
         /// <param name="supervisor">The SquadSupervisor which controlls the combat unit.</param>
         /// <param name="trainingMode">Determining if the whole flow is about executing a neural net or training one.</param>
-        public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor, bool trainingMode)
+        public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor)
         {
             this.unit = unit;
             this.initialHitPoints = unit.HitPoints;
             this.squadSupervisor = supervisor;
             this.neuralNetController = NeuralNetController.GetInstance();
             this.neuralNet = neuralNetController.GetNeuralNet();
-            this.trainingMode = trainingMode;
+            this.trainingMode = TrainingModule.trainingMode;
         }
         #endregion
 

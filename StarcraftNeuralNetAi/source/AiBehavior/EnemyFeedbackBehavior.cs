@@ -27,13 +27,13 @@ namespace NeuralNetTraining
         /// <param name="unit"></param>
         /// <param name="supervisor"></param>
         #region Constructor
-        public EnemyFeedbackBehavior(Unit unit, SquadSupervisor supervisor, bool trainingMode)
+        public EnemyFeedbackBehavior(Unit unit, SquadSupervisor supervisor)
         {
             this.unit = unit;
             this.hitPoints = unit.HitPoints;
             this.squadSupervisor = supervisor;
             this.neuralNetController = NeuralNetController.GetInstance();
-            this.trainingMode = trainingMode;
+            this.trainingMode = TrainingModule.trainingMode;
         }
         #endregion
 
