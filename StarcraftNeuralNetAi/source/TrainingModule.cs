@@ -11,15 +11,44 @@ namespace NeuralNetTraining
     /// </summary>
     public class TrainingModule : AiBase
     {
-        #region Member
-        private static int matchNumber = 0;
-        private SquadSupervisor squadSupervisor;
-        private NeuralNetController neuralNetController;
-        private bool isEnemySquadInitialized;
-        private bool receivedHandshake = false;
-        private bool sentHandshake = false;
-        private string handshakeMessage = "Commencing Match Procedure! Training Mode: ";
-        public static bool trainingMode = true;
+        #region Member Fields
+        // Match info
+        private static int m_matchNumber = 0;
+        private static bool m_trainingMode = true;
+
+        // To be initialized
+        private SquadSupervisor m_squadSupervisor;
+        private NeuralNetController m_neuralNetController;
+        private bool m_isEnemySquadInitialized;
+
+        // Handshake before training start
+        private bool m_receivedHandshake = false;
+        private bool m_sentHandshake = false;
+        private string m_handshakeMessage = "Commencing Match Procedure! Training Mode: ";
+        #endregion
+
+        #region Member Properties
+        /// <summary>
+        /// Read-only. The TrainingModule keeps track of the match count.
+        /// </summary>
+        public static int MatchNumber
+        {
+            get
+            {
+                return m_matchNumber;
+            }
+        }
+
+        /// <summary>
+        /// Read-only. Stated by the TrainingModule, if the match is in training mode or execution mode.
+        /// </summary>
+        public static bool TrainingMode
+        {
+            get
+            {
+                return m_trainingMode;
+            }
+        }
         #endregion
 
         #region BWAPI Events
@@ -28,23 +57,23 @@ namespace NeuralNetTraining
         /// </summary>
         public override void OnStart()
         {
-            matchNumber++;
+            m_matchNumber++;
             // Config match
             Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
             Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
 
-            if (trainingMode)
+            if (m_trainingMode)
             {
-                Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
+                //Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
             }
 
             // Initialize Member
-            neuralNetController = NeuralNetController.GetInstance();
-            isEnemySquadInitialized = false;
-            squadSupervisor = new SquadSupervisor();
+            m_neuralNetController = NeuralNetController.Instance;
+            m_isEnemySquadInitialized = false;
+            m_squadSupervisor = new SquadSupervisor();
             // A handshake is used to check if both instances of StarCraft are ready. Due to the network delay (even on the local machine), the information about the enemy units isn't available right away
-            receivedHandshake = false;
-            sentHandshake = false;
+            m_receivedHandshake = false;
+            m_sentHandshake = false;
 
             InitializeSquad();
         }
@@ -54,23 +83,23 @@ namespace NeuralNetTraining
         /// </summary>
         public override void OnFrame()
         {
-            if (!isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count && Game.FrameCount > 5)
+            if (!m_isEnemySquadInitialized && Game.AllUnits.Count > Game.Self.Units.Count && Game.FrameCount > 5)
             {
                 InitializeEnemySquad(); // the enemy squad has to be initialized on one of the first frames, due to the asynchronus connection to the match, otherwise it would occur that there are no enemy units at all.
-                isEnemySquadInitialized = true;
+                m_isEnemySquadInitialized = true;
             }
 
             if(Game.FrameCount == 10)
             {
-                Game.SendText(handshakeMessage + trainingMode.ToString()); // trigger handshake
-                sentHandshake = true;
+                Game.SendText(m_handshakeMessage + m_trainingMode.ToString()); // trigger handshake
+                m_sentHandshake = true;
             }
 
             // if the handshake test is passed, execute the essential logics for each frame
-            if (receivedHandshake && sentHandshake)
+            if (m_receivedHandshake && m_sentHandshake)
             {
                 DrawOnScreen(); // draw several information on the screen
-                squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
+                m_squadSupervisor.OnFrame(); // the supervisor will trigger OnFrame on the AiCombatUnits as well.
             }
         }
 
@@ -80,7 +109,7 @@ namespace NeuralNetTraining
         /// <param name="unit">Is triggered on any kind of unit which is being destroyed.</param>
         public override void OnUnitDestroy(Unit unit)
         {
-            squadSupervisor.OnUnitDestroy(unit); // pass event to the SquadSupervisor
+            m_squadSupervisor.OnUnitDestroy(unit); // pass event to the SquadSupervisor
         }
 
         /// <summary>
@@ -89,9 +118,9 @@ namespace NeuralNetTraining
         /// <param name="isWinner">States if this player has won.</param>
         public override void OnEnd(bool isWinner)
         {
-            if (trainingMode)
+            if (m_trainingMode)
             {
-                neuralNetController.ExecuteTraining();
+                m_neuralNetController.ExecuteTraining();
             }
         }
 
@@ -102,9 +131,9 @@ namespace NeuralNetTraining
         /// <param name="text">Chat message content.</param>
         public override void OnReceiveText(Player player, string text)
         {
-            if (text == handshakeMessage + trainingMode.ToString() && player.Id != Game.Self.Id)
+            if (text == m_handshakeMessage + m_trainingMode.ToString() && player.Id != Game.Self.Id)
             {
-                receivedHandshake = true;
+                m_receivedHandshake = true;
             }
         }
         #endregion
@@ -117,7 +146,7 @@ namespace NeuralNetTraining
         {
             foreach(Unit unit in Game.Self.Units)
             {
-                squadSupervisor.AddFriendlyCombatUnit(new CombatUnitTrainingBehavior(unit, squadSupervisor));
+                m_squadSupervisor.AddFriendlyCombatUnit(new CombatUnitTrainingBehavior(unit, m_squadSupervisor));
             }
         }
 
@@ -128,7 +157,7 @@ namespace NeuralNetTraining
         {
             foreach (Unit unit in Game.Enemy.Units)
             {
-                squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, squadSupervisor));
+                m_squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, m_squadSupervisor));
             }
         }
 
@@ -139,9 +168,9 @@ namespace NeuralNetTraining
         {
             Game.DrawTextScreen(5, 0, "Player : {0}", Game.Self.Id);
             Game.DrawTextScreen(60, 0, "FPS : {0}", Game.Fps);
-            Game.DrawTextScreen(5, 10, "Me/Enemy {0}/{1}", squadSupervisor.GetFriendlyCount(), squadSupervisor.GetEnemyCount());
-            Game.DrawTextScreen(5, 20, "Match #{0}", matchNumber);
-            if(trainingMode)
+            Game.DrawTextScreen(5, 10, "Me/Enemy {0}/{1}", m_squadSupervisor.FriendlyCount, m_squadSupervisor.EnemyCount);
+            Game.DrawTextScreen(5, 20, "Match #{0}", m_matchNumber);
+            if(m_trainingMode)
             {
                 Game.DrawTextScreen(5, 30, "Training Mode");
             }
@@ -153,14 +182,6 @@ namespace NeuralNetTraining
         #endregion
 
         #region Public Functions
-        /// <summary>
-        /// The TrainingModule keeps track of the match count.
-        /// </summary>
-        /// <returns>Returns the current number of the match.</returns>
-        public static int GetMatchNumber()
-        {
-            return matchNumber;
-        }
         #endregion
     }
 }

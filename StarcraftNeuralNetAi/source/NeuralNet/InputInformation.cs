@@ -11,14 +11,14 @@ namespace NeuralNetTraining
     /// </summary>
     public class InputInformation
     {
-        #region Member
+        #region Member Fields
         // Known by SquadSupervisor
-        private double enemyHitPoints;
-        private double initialEnemyHitPoints;
+        private double m_enemyHitPoints;
+        private double m_initialEnemyHitPoints;
         // Known by CombatUnitTrainingBehavior
-        private double localHitPoints;
-        private double initialLocalHitPoints;
-        private bool isCompleted = false;
+        private double m_localHitPoints;
+        private double m_initialLocalHitPoints;
+        private bool m_isCompleted = false;
         #endregion
 
         #region Constructor
@@ -29,8 +29,8 @@ namespace NeuralNetTraining
         /// <param name="initialEnemyHp">overall and initial enemy bombat units hit points</param>
         public InputInformation(int enemyHp, int initialEnemyHp)
         {
-            this.enemyHitPoints = enemyHp;
-            this.initialEnemyHitPoints = initialEnemyHp;
+            this.m_enemyHitPoints = enemyHp;
+            this.m_initialEnemyHitPoints = initialEnemyHp;
         }
         #endregion
 
@@ -41,7 +41,7 @@ namespace NeuralNetTraining
         /// <returns>Normalized array of input information for the neural net.</returns>
         public double[] GetNormalizedData()
         {
-            return new double[] {enemyHitPoints / initialEnemyHitPoints, localHitPoints / initialLocalHitPoints};
+            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints, m_localHitPoints / m_initialLocalHitPoints};
         }
 
         /// <summary>
@@ -51,9 +51,9 @@ namespace NeuralNetTraining
         /// <param name="initialHitPoints">initial hit points of the friendly combat unit</param>
         public void CompleteInputData(int hitPoints, int initialHitPoints)
         {
-            this.localHitPoints = (double)hitPoints;
-            this.initialLocalHitPoints = (double)initialHitPoints;
-            this.isCompleted = true;
+            this.m_localHitPoints = (double)hitPoints;
+            this.m_initialLocalHitPoints = (double)initialHitPoints;
+            this.m_isCompleted = true;
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace NeuralNetTraining
         /// <returns>Returns all normalized friendly values as array.</returns>
         public double[] GetFriendlyInfo()
         {
-            return new double[] {localHitPoints / initialLocalHitPoints};
+            return new double[] {m_localHitPoints / m_initialLocalHitPoints};
         }
 
         /// <summary>
@@ -71,12 +71,12 @@ namespace NeuralNetTraining
         /// <returns>Returns all normalized enemy values as array.</returns>
         public double[] GetEnemyInfo()
         {
-            return new double[] {enemyHitPoints / initialEnemyHitPoints};
+            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints};
         }
 
         public bool IsCompleted()
         {
-            return isCompleted;
+            return m_isCompleted;
         }
 
         /*
@@ -89,7 +89,7 @@ namespace NeuralNetTraining
 
         public override string ToString()
         {
-            return "HP F: " + localHitPoints + "   HP E: " + enemyHitPoints;
+            return "HP F: " + m_localHitPoints + "   HP E: " + m_enemyHitPoints;
         }
         #endregion
 

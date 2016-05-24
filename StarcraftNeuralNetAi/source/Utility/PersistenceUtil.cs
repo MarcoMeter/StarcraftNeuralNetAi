@@ -11,13 +11,13 @@ namespace NeuralNetTraining.Utility
     public class PersistenceUtil
     {
         #region Member
-        private static string basePathLogs = @"bwapi-data\AI\cs\logs\";
-        private static string basePathNets = @"bwapi-data\AI\cs\nets\";
-        private static bool isSubDirLogsInit = false;
-        private static string subDirLogs = "";
-        private static string netFilePathInfo = basePathNets + "player" + Game.Self.Id.ToString() + "_LatestNet.txt";
-        private static bool isSubDirNetsInit = false;
-        private static string subDirNets = "";
+        private static string m_basePathLogs = @"bwapi-data\AI\cs\logs\";
+        private static string m_basePathNets = @"bwapi-data\AI\cs\nets\";
+        private static bool m_isSubDirLogsInit = false;
+        private static string m_subDirLogs = "";
+        private static string m_netFilePathInfo = m_basePathNets + "player" + Game.Self.Id.ToString() + "_LatestNet.txt";
+        private static bool m_isSubDirNetsInit = false;
+        private static string m_subDirNets = "";
         #endregion
 
         #region Public Functions
@@ -27,7 +27,7 @@ namespace NeuralNetTraining.Utility
         /// <param name="line">Content</param>
         public static void WriteLine(string line)
         {
-            string fileName = @"\player" + Game.Self.Id.ToString() + "_match" + TrainingModule.GetMatchNumber() + ".log";
+            string fileName = @"\player" + Game.Self.Id.ToString() + "_match" + TrainingModule.MatchNumber + ".log";
 
             // Create a logs folder
             if (!Directory.Exists(@"bwapi-data\AI\cs\logs"))
@@ -36,15 +36,15 @@ namespace NeuralNetTraining.Utility
             }
 
             // Create a new subfolder for the session
-            if (!isSubDirLogsInit)
+            if (!m_isSubDirLogsInit)
             {
-                subDirLogs = basePathLogs + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff") + "_player" + Game.Self.Id.ToString();
-                Directory.CreateDirectory(subDirLogs);
-                isSubDirLogsInit = true;
+                m_subDirLogs = m_basePathLogs + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff") + "_player" + Game.Self.Id.ToString();
+                Directory.CreateDirectory(m_subDirLogs);
+                m_isSubDirLogsInit = true;
             }
 
             // Create and append to the log file
-            using (StreamWriter file = new StreamWriter(subDirLogs + fileName, true))
+            using (StreamWriter file = new StreamWriter(m_subDirLogs + fileName, true))
             {
                 file.WriteLine(System.DateTime.Now.TimeOfDay.ToString("") + "   " + line);
             }
@@ -57,14 +57,14 @@ namespace NeuralNetTraining.Utility
         public static BasicNetwork GetLatestNeuralNet()
         {
             // If the nets directory or the file, which holds the reference to the path of the latest neural network, doesn't exist, return null and let the NeuralNetController instantiate a new neural network.
-            if (!Directory.Exists(@"bwapi-data\AI\cs\nets") || !new FileInfo(netFilePathInfo).Exists)
+            if (!Directory.Exists(@"bwapi-data\AI\cs\nets") || !new FileInfo(m_netFilePathInfo).Exists)
             {
                 return null;
             }
 
             // Read the path to the neural net line
             string latestNetFilePath = "";
-            foreach (string line in File.ReadLines(netFilePathInfo))
+            foreach (string line in File.ReadLines(m_netFilePathInfo))
             {
                 latestNetFilePath = line;
             }
@@ -90,7 +90,7 @@ namespace NeuralNetTraining.Utility
         /// <param name="net">The processed neural network.</param>
         public static void SaveNeuralNet(BasicNetwork net)
         {
-            string fileName = @"\player" + Game.Self.Id.ToString() + "_match" + TrainingModule.GetMatchNumber() + ".ann";
+            string fileName = @"\player" + Game.Self.Id.ToString() + "_match" + TrainingModule.MatchNumber + ".ann";
 
             // Create a nets folder
             if (!Directory.Exists(@"bwapi-data\AI\cs\nets"))
@@ -99,18 +99,18 @@ namespace NeuralNetTraining.Utility
             }
 
             // Create a new subfolder for the session
-            if (!isSubDirNetsInit)
+            if (!m_isSubDirNetsInit)
             {
-                subDirNets = basePathNets + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff") + "_player" + Game.Self.Id.ToString();
-                Directory.CreateDirectory(subDirNets);
-                isSubDirNetsInit = true;
+                m_subDirNets = m_basePathNets + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fff") + "_player" + Game.Self.Id.ToString();
+                Directory.CreateDirectory(m_subDirNets);
+                m_isSubDirNetsInit = true;
             }
 
             // Update the text file which keeps reference to the path of the latest neural network
-            File.WriteAllText(netFilePathInfo, subDirNets + fileName);
+            File.WriteAllText(m_netFilePathInfo, m_subDirNets + fileName);
 
             // Write neural net to file
-            EncogDirectoryPersistence.SaveObject(new FileInfo(subDirNets + fileName), net);
+            EncogDirectoryPersistence.SaveObject(new FileInfo(m_subDirNets + fileName), net);
         }
         #endregion
     }

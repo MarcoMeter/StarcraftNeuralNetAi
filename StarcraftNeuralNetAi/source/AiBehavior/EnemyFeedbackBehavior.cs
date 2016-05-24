@@ -10,74 +10,94 @@ namespace NeuralNetTraining
 {
     public class EnemyFeedbackBehavior
     {
-        #region Members
-        private Unit unit;
-        private int hitPoints;
-        private SquadSupervisor squadSupervisor;
-        private NeuralNetController neuralNetController;
-        private List<CombatUnitTrainingBehavior> attackers = new List<CombatUnitTrainingBehavior>();
-        private List<FitnessMeasure> attackersFitness = new List<FitnessMeasure>();
-        private bool isExpectingFeedback = false;
-        private bool trainingMode;
+        #region Members Fields
+        // Unit specifics
+        private Unit m_unit;
+        private int m_hitPoints;
+        private SquadSupervisor m_squadSupervisor;
+
+        // Attack feedback
+        private List<CombatUnitTrainingBehavior> m_attackers = new List<CombatUnitTrainingBehavior>();
+        private List<FitnessMeasure> m_attackersFitness = new List<FitnessMeasure>();
+        private bool m_isExpectingFeedback = false;
+
+        private bool m_trainingMode;
         #endregion
 
+        #region Member Properties
         /// <summary>
-        /// 
+        /// Read-only unit for the behavior's specific unit.
         /// </summary>
-        /// <param name="unit"></param>
-        /// <param name="supervisor"></param>
+        public Unit Unit
+        {
+            get
+            {
+                return this.m_unit;
+            }
+        }
+
+        /// <summary>
+        /// Read-only friendly SquadSupervisor.
+        /// </summary>
+        public SquadSupervisor SquadSupervisor
+        {
+            get
+            {
+                return this.m_squadSupervisor;
+            }
+        }
+        #endregion
+
         #region Constructor
+        /// <summary>
+        /// Based on an enemy combat unit, this behavior is constructed to add more functionality and logics to a single foe.
+        /// </summary>
+        /// <param name="unit">Enemy unit</param>
+        /// <param name="supervisor">Friendly SquadSupervisor</param>
         public EnemyFeedbackBehavior(Unit unit, SquadSupervisor supervisor)
         {
-            this.unit = unit;
-            this.hitPoints = unit.HitPoints;
-            this.squadSupervisor = supervisor;
-            this.neuralNetController = NeuralNetController.GetInstance();
-            this.trainingMode = TrainingModule.trainingMode;
+            this.m_unit = unit;
+            this.m_hitPoints = unit.HitPoints;
+            this.m_squadSupervisor = supervisor;
+            this.m_trainingMode = TrainingModule.TrainingMode;
         }
         #endregion
 
         #region Public Functions
-        public void OnAttackLaunched(FitnessMeasure fitnessMeasure, CombatUnitTrainingBehavior friendlyUnit)
+        /// <summary>
+        /// A friendly unit trigger the launch of a strike or projectile and makes this enemy combat unit to await feedback.
+        /// </summary>
+        /// <param name="fitnessMeasure">The attack action's fitness measure object</param>
+        /// <param name="friendlyUnitBehavior">Attacking friendly unit behavior</param>
+        public void OnAttackLaunched(FitnessMeasure fitnessMeasure, CombatUnitTrainingBehavior friendlyUnitBehavior)
         {
-            attackers.Add(friendlyUnit);
-            attackersFitness.Add(fitnessMeasure);
-            isExpectingFeedback = true;
-        }
-        // Getter
-        public Unit GetUnit()
-        {
-            return this.unit;
-        }
-
-        public SquadSupervisor GetSupervisor()
-        {
-            return this.squadSupervisor;
+            m_attackers.Add(friendlyUnitBehavior);
+            m_attackersFitness.Add(fitnessMeasure);
+            m_isExpectingFeedback = true;
         }
         #endregion
 
         #region Behavior Logic
         /// <summary>
-        /// OnFramne is triggered each frame by the SquadSupervisor for further logic.
+        /// OnFrame is triggered each frame by the SquadSupervisor for further logic.
         /// </summary>
         public void OnFrame()
         {
-            if (isExpectingFeedback && trainingMode)
+            if (m_isExpectingFeedback && m_trainingMode)
             {
                 // check if damage is taken
-                if (unit.HitPoints < hitPoints)
+                if (m_unit.HitPoints < m_hitPoints)
                 {
-                    PersistenceUtil.WriteLine("Enemy took damage, computing feedback");
-                    int totalDamage = hitPoints - unit.HitPoints;
-                    if (attackers.Count > 0)
+                    int totalDamage = m_hitPoints - m_unit.HitPoints;
+                    if (m_attackers.Count > 0)
                     {
-                        neuralNetController.AddTrainingDataPair(attackersFitness[0].ComputeDataPair(attackers[0].GenerateInputInfo()));
-                        attackers.RemoveAt(0);
-                        attackersFitness.RemoveAt(0);
+                        m_attackersFitness[0].ComputeDataPair(m_attackers[0].GenerateInputInfo());
+                        m_attackers.RemoveAt(0);
+                        m_attackersFitness.RemoveAt(0);
                     }
-                    hitPoints = unit.HitPoints;
+                    m_hitPoints = m_unit.HitPoints;
+                    //isExpectingFeedback = false;
                 }
-                isExpectingFeedback = false;
             }
         }
         #endregion

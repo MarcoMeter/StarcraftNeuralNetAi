@@ -14,11 +14,12 @@ namespace NeuralNetTraining
     /// </summary>
     public class FitnessMeasure
     {
-        #region Member
-        private InputInformation initialInfo;
-        private InputInformation midInfo;
-        private CombatUnitState randomOutput;
-        private IMLData computedOutput;
+        #region Member Fields
+        private InputInformation m_initialInfo;
+        private InputInformation m_midInfo;
+        private CombatUnitState m_randomOutput;
+        private IMLData m_computedOutput;
+        private NeuralNetController m_neuralNetController;
         #endregion
 
         #region Constructor
@@ -31,16 +32,17 @@ namespace NeuralNetTraining
         /// <param name="computedOutput">The computed outputs by the neural net.</param>
         public FitnessMeasure(InputInformation initial, CombatUnitState randomAction, IMLData computedOutput)
         {
-            this.initialInfo = initial;
-            this.randomOutput = randomAction;
-            this.computedOutput = computedOutput;
+            this.m_initialInfo = initial;
+            this.m_randomOutput = randomAction;
+            this.m_computedOutput = computedOutput;
+            this.m_neuralNetController = NeuralNetController.Instance;
         }
         #endregion
 
         #region Public Functions
         public void AddMidInfo(InputInformation info)
         {
-            this.midInfo = info;
+            this.m_midInfo = info;
         }
 
         /// <summary>
@@ -50,19 +52,19 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="final">Add the final InputInformation in order to compare the initial and final state of the combat which has been altered after executing an action.</param>
         /// <returns>Returns a data pair based on the initial input and the computed desired output.</returns>
-        public BasicMLDataPair ComputeDataPair(InputInformation final)
+        public void ComputeDataPair(InputInformation final)
         {
             // assign the state recordings
-            double[] friendlyInitial = initialInfo.GetFriendlyInfo();
-            double[] enemyInitial = midInfo.GetEnemyInfo();
-            double[] friendlyFinal = midInfo.GetFriendlyInfo();
+            double[] friendlyInitial = m_initialInfo.GetFriendlyInfo();
+            double[] enemyInitial = m_midInfo.GetEnemyInfo();
+            double[] friendlyFinal = m_midInfo.GetFriendlyInfo();
             double[] enemyFinal = final.GetEnemyInfo();
             double friendRatio = 0;
             double enemyRatio = 0;
             int ratioDataCount = 0;
 
             PersistenceUtil.WriteLine("<<< START FITNESS >>>");
-            PersistenceUtil.WriteLine("Random Action : " + (int)randomOutput + " " + randomOutput.ToString());
+            PersistenceUtil.WriteLine("Random Action : " + (int)m_randomOutput + " " + m_randomOutput.ToString());
             PersistenceUtil.WriteLine("Initial Friend: " + String.Join(",", friendlyInitial.Select(p => p.ToString()).ToArray()));
             PersistenceUtil.WriteLine("Initial Enemy : " + String.Join(",", enemyInitial.Select(p => p.ToString()).ToArray()));
             PersistenceUtil.WriteLine("Final   Friend: " + String.Join(",", friendlyFinal.Select(p => p.ToString()).ToArray()));
@@ -107,27 +109,27 @@ namespace NeuralNetTraining
             double desiredAdjustment = 1 + (friendRatio - enemyRatio);
 
             PersistenceUtil.WriteLine("Adjustment    : " + desiredAdjustment);
-            PersistenceUtil.WriteLine("Computed Output: " + computedOutput.ToString());
+            PersistenceUtil.WriteLine("Computed Output: " + m_computedOutput.ToString());
 
             // convert output and make adjustments to the desired and undesired outputs
-            double[] output = new double[computedOutput.Count];
-            for(int i = 0; i < computedOutput.Count; i++)
+            double[] output = new double[m_computedOutput.Count];
+            for(int i = 0; i < m_computedOutput.Count; i++)
             {
-                if(i == (int)randomOutput)
+                if(i == (int)m_randomOutput)
                 {
-                    output[i] = computedOutput[i] * desiredAdjustment;
+                    output[i] = m_computedOutput[i] * desiredAdjustment;
                 }
                 else
                 {
-                    output[i] = computedOutput[i];
+                    output[i] = m_computedOutput[i];
                 }
             }
 
             // create and return the data pair made of the initial input information and 
-            BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(initialInfo.GetNormalizedData()), new BasicMLData(output));
+            BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(m_initialInfo.GetNormalizedData()), new BasicMLData(output));
             PersistenceUtil.WriteLine("Desired Output : " + pair.Ideal.ToString());
             PersistenceUtil.WriteLine("<<< END FITNESS >>>");
-            return pair;
+            m_neuralNetController.AddTrainingDataPair(pair);
         }
         #endregion
 

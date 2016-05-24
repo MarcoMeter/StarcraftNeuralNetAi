@@ -13,40 +13,64 @@ namespace NeuralNetTraining
 {
     /// <summary>
     /// Each controlled combat unit should be paired to a CombatUnitTrainingBehavior. This behavior takes care of the learning procedure of the individual neural networks.
+    /// Unfortunately the unit class is sealed, which prohibites deriving from it.
     /// </summary>
     public class CombatUnitTrainingBehavior
     {
-        #region Member
-        private Unit unit;
-        private int initialHitPoints;
-        private SquadSupervisor squadSupervisor;
-        private NeuralNetController neuralNetController;
-        private BasicNetwork neuralNet;
-        private FitnessMeasure fitnessMeasure;
-        private bool requestDecision = true;
-        private CombatUnitState currentState = CombatUnitState.SquadState;
-        private bool stateTransition = true;
-        private Unit currentTarget;
-        private int attackAnimationTime = 4;
-        private int stateFrameCount = 0;
-        private bool trainingMode;
+        #region Member Fields
+        // Unit related props
+        private Unit m_unit;
+        private int m_initialHitPoints;
+
+        // State and decision fields
+        private SquadSupervisor m_squadSupervisor;
+        private NeuralNetController m_neuralNetController;
+        private BasicNetwork m_neuralNet;
+        private FitnessMeasure m_fitnessMeasure;
+        private bool m_requestDecision = true;
+        private CombatUnitState m_currentState = CombatUnitState.SquadState;
+        private bool m_stateTransition = true;
+
+        // Attack action
+        private Unit m_currentTarget;
+        private int m_attackAnimationTime = 3;
+        private int m_stateFrameCount = 0;
+
+        // Training concerns
+        private bool m_trainingMode;
+
+        // Visual Debugging
+        private const int m_stimmedCircleOff = 12;
+        private const int m_stimmedCircleRadius = 2;
+        #endregion
+
+        #region Member Properties
+        /// <summary>
+        /// Read-only unit for the behavior's specific unit.
+        /// </summary>
+        public Unit Unit
+        {
+            get
+            {
+                return this.m_unit;
+            }
+        }
         #endregion
 
         #region Constructor
         /// <summary>
-        /// Create an instance of the AiCombatBehavior.
+        /// Create an instance of the CombatUnitTrainingBehavior.
         /// </summary>
         /// <param name="unit">The individual combat unit which needs to be paired with this behavior.</param>
         /// <param name="supervisor">The SquadSupervisor which controlls the combat unit.</param>
-        /// <param name="trainingMode">Determining if the whole flow is about executing a neural net or training one.</param>
         public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor)
         {
-            this.unit = unit;
-            this.initialHitPoints = unit.HitPoints;
-            this.squadSupervisor = supervisor;
-            this.neuralNetController = NeuralNetController.GetInstance();
-            this.neuralNet = neuralNetController.GetNeuralNet();
-            this.trainingMode = TrainingModule.trainingMode;
+            this.m_unit = unit;
+            this.m_initialHitPoints = unit.HitPoints;
+            this.m_squadSupervisor = supervisor;
+            this.m_neuralNetController = NeuralNetController.Instance;
+            this.m_neuralNet = m_neuralNetController.NeuralNet;
+            this.m_trainingMode = TrainingModule.TrainingMode;
         }
         #endregion
 
@@ -57,18 +81,9 @@ namespace NeuralNetTraining
         /// <returns>After completing the data, the data gets returned</returns>
         public InputInformation GenerateInputInfo()
         {
-            InputInformation info = squadSupervisor.GetGlobalInputInformation();
-            info.CompleteInputData(unit.HitPoints, initialHitPoints);
+            InputInformation info = m_squadSupervisor.GlobalInputInfo;
+            info.CompleteInputData(m_unit.HitPoints, m_initialHitPoints);
             return info;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>Returns the paired unit to this behavior class.</returns>
-        public Unit GetUnit()
-        {
-            return this.unit;
         }
         #endregion
 
@@ -80,17 +95,17 @@ namespace NeuralNetTraining
         public void OnFrame()
         {
             // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
-            if (requestDecision && squadSupervisor.GetEnemyCount() > 0)
+            if (m_requestDecision && m_squadSupervisor.EnemyCount > 0)
             {
                 MakeDecision();
             }
-            else if (squadSupervisor.GetEnemyCount() == 0)
+            else if (m_squadSupervisor.EnemyCount == 0)
             {
-                currentState = CombatUnitState.SquadState;
+                m_currentState = CombatUnitState.SquadState;
             }
 
             // state execution, the states will determine which target to go for
-            if (currentState == CombatUnitState.SquadState)
+            if (m_currentState == CombatUnitState.SquadState)
             {
                 SquadState();
             }
@@ -110,74 +125,77 @@ namespace NeuralNetTraining
         {
             InputInformation inputInfo = GenerateInputInfo();   // request input information
             double[] inputData = inputInfo.GetNormalizedData(); // normalize data
-            CombatUnitState newState = (CombatUnitState)GeneralUtil.randomNumberGenerator.Next(3);      // determine random action
+            CombatUnitState newState = (CombatUnitState)GeneralUtil.RandomNumberGenerator.Next(3);      // determine random action
 
-            if (trainingMode)
+            if (m_trainingMode)
             {
-                IMLData outData = neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
-                fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);          // initialize FitnessMeasure
+                IMLData outData = m_neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
+                m_fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);          // initialize FitnessMeasure
             }
             else
             {
-                PersistenceUtil.WriteLine(neuralNet.Compute(new BasicMLData(inputData)).ToString());
-                newState = (CombatUnitState)neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
+                PersistenceUtil.WriteLine(m_neuralNet.Compute(new BasicMLData(inputData)).ToString());
+                newState = (CombatUnitState)m_neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
             }
 
             // determine if a state transition is occuring
-            if (newState != currentState)
+            if (newState != m_currentState)
             {
-                stateTransition = true;
-                currentState = newState; // transition to new state
+                m_stateTransition = true;
+                m_currentState = newState; // transition to new state
             }
             else
             {
-                stateTransition = false;
+                m_stateTransition = false;
             }
 
-            requestDecision = false;
+            m_requestDecision = false;
         }
 
         /// <summary>
-        /// 
+        /// Carry out attack action depending on the current decision.
         /// </summary>
         public void AttackAction()
         {
             // Choose a new target based on a stateTransition or on the existence of the target
-            if (stateTransition || currentTarget == null)
+            if (m_stateTransition || m_currentTarget == null)
             {
                 // Find a target based on the current state
-                switch(currentState)
+                switch(m_currentState)
                 {
                     case CombatUnitState.AttackClosest:
-                        currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+                        m_currentTarget = m_squadSupervisor.GetClosestEnemyUnit(this);
                         break;
                     case CombatUnitState.AttackWeakest:
-                        currentTarget = squadSupervisor.GetWeakestEnemyUnit();
+                        m_currentTarget = m_squadSupervisor.GetWeakestEnemyUnit();
                         break;
                     case CombatUnitState.AttackMostValuable:
-                        currentTarget = squadSupervisor.GetClosestEnemyUnit(this);
+                        m_currentTarget = m_squadSupervisor.GetClosestEnemyUnit(this);
                         break;
                 }
             }
 
             // check if the attack animation has been completely executed
-            if (stateFrameCount < attackAnimationTime)
+            if (m_stateFrameCount < m_attackAnimationTime)
             {
-                SmartAttack(currentTarget);
-                if (unit.IsInWeaponRange(currentTarget) && unit.GroundWeaponCooldown == 0)
+                SmartAttack(m_currentTarget);
+                if (m_unit.IsInWeaponRange(m_currentTarget))
                 {
-                    stateFrameCount++; // if the unit is in range and if the weapon isn't on cooldown, count the animation frames
+                    m_stateFrameCount++; // if the unit is in range and if the weapon isn't on cooldown, count the animation frames
                 }
             }
             else
             {
-                fitnessMeasure.AddMidInfo(GenerateInputInfo());
-                stateFrameCount = 0;
-                requestDecision = true;
-                if (trainingMode)
+                m_fitnessMeasure.AddMidInfo(GenerateInputInfo());
+                m_stateFrameCount = 0;
+                m_requestDecision = true;
+                if (m_trainingMode)
                 {
-                    //neuralNetController.AddTrainingDataPair(fitnessMeasure.ComputeDataPair(GenerateInputInfo()));
-                    squadSupervisor.FindEnemyUnitBehavior(unit.Target).OnAttackLaunched(fitnessMeasure, this);
+                    EnemyFeedbackBehavior enemyBehavior = m_squadSupervisor.FindEnemyUnitBehavior(m_unit.Target);
+                    if(enemyBehavior != null)
+                    {
+                        enemyBehavior.OnAttackLaunched(m_fitnessMeasure, this);
+                    }
                 }
             }
         }
@@ -187,9 +205,9 @@ namespace NeuralNetTraining
         /// </summary>
         private void SquadState()
         {
-            if (unit.LastCommand.Type != UnitCommandType.HoldPosition)
+            if (m_unit.LastCommand.Type != UnitCommandType.HoldPosition)
             {
-                unit.HoldPosition(false);
+                m_unit.HoldPosition(false);
             }
         }
 
@@ -198,7 +216,7 @@ namespace NeuralNetTraining
         /// </summary>
         private void Retreat()
         {
-
+            // TODO: implement retreat logic as soon as needed
         }
         #endregion
 
@@ -216,15 +234,15 @@ namespace NeuralNetTraining
             }
 
             // Draw attack line
-            Game.DrawLineMap(unit.Position.X, unit.Position.Y, target.Position.X, target.Position.Y, Color.Green);
+            Game.DrawLineMap(m_unit.Position.X, m_unit.Position.Y, target.Position.X, target.Position.Y, Color.Green);
 
             // check if the unit is already attacking the target, so that the same command won't be issued over and over again
-            if (unit.LastCommand.Type == UnitCommandType.AttackUnit && unit.LastCommand.Target == target)
+            if (m_unit.LastCommand.Type == UnitCommandType.AttackUnit && m_unit.LastCommand.Target == target)
             {
                 return;
             }
 
-            unit.Attack(target, false);
+            m_unit.Attack(target, false);
         }
 
         /// <summary>
@@ -234,21 +252,21 @@ namespace NeuralNetTraining
         private void SmartMove(Position targetPosition)
         {
             // if the position is null or isn't valide, return
-            if (targetPosition.IsInvalid || targetPosition == null)
+            if (targetPosition == null || targetPosition.IsInvalid)
             {
                 return;
             }
 
             // check if the last command is equal to the current command, same applies to the target
-            if (unit.LastCommand.Type == UnitCommandType.Move && unit.LastCommand.TargetPosition == targetPosition && unit.IsMoving)
+            if (m_unit.LastCommand.Type == UnitCommandType.Move && m_unit.LastCommand.TargetPosition == targetPosition && m_unit.IsMoving)
             {
                 return;
             }
 
             // execute movement
-            if(!unit.Move(targetPosition, false))
+            if(!m_unit.Move(targetPosition, false))
             {
-                unit.HoldPosition(false);
+                m_unit.HoldPosition(false);
             }
         }
 
@@ -257,10 +275,10 @@ namespace NeuralNetTraining
         /// </summary>
         private void DrawUnitInfo()
         {
-            Game.DrawTextMap(unit.Position.X, unit.Position.Y, "{0}", currentState.ToString());
-            if (unit.IsStimmed)
+            Game.DrawTextMap(m_unit.Position.X, m_unit.Position.Y, "{0}", m_currentState.ToString());
+            if (m_unit.IsStimmed)
             {
-                Game.DrawCircleMap(unit.Position.X, unit.Position.Y + 12, 2, Color.Red, true);
+                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y + m_stimmedCircleOff, m_stimmedCircleRadius, Color.Red, true);
             }
         }
         #endregion
