@@ -64,7 +64,7 @@ namespace NeuralNetTraining
 
             if (m_trainingMode)
             {
-                //Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
+                Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
             }
 
             // Initialize Member

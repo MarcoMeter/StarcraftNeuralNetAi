@@ -20,7 +20,7 @@ namespace AttackAnalysisModule
         private Unit m_myUnit;
         // Draw properties
         private int m_circleRadius = 4;
-        private string csvHeader = "FrameCount,isAttacking,isAttackFrame,Cooldown";
+        private string m_csvHeader = "FrameCount,isAttacking,isAttackFrame,Cooldown";
         #endregion
 
         #region BWAPI Events
@@ -38,7 +38,7 @@ namespace AttackAnalysisModule
 
             // a csv file will be used as format for logging
             // add the first line : column headers
-            LogUtil.AppendString(csvHeader);
+            LogUtil.AppendString(m_csvHeader);
         }
 
         /// <summary>

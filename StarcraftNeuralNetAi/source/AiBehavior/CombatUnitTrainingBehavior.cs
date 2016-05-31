@@ -33,7 +33,10 @@ namespace NeuralNetTraining
 
         // Attack action
         private Unit m_currentTarget;
-        private int m_attackAnimationTime = 3;
+        private bool m_attackAnimProcess = false;
+
+        // Run action
+        private const int m_runDuration = 7;
         private int m_stateFrameCount = 0;
 
         // Training concerns
@@ -109,6 +112,10 @@ namespace NeuralNetTraining
             {
                 SquadState();
             }
+            else if(m_currentState == CombatUnitState.RunAway)
+            {
+                RunAway();
+            }
             else
             {
                 AttackAction();
@@ -155,9 +162,9 @@ namespace NeuralNetTraining
         /// <summary>
         /// Carry out attack action depending on the current decision.
         /// </summary>
-        public void AttackAction()
+        private void AttackAction()
         {
-            // Choose a new target based on a stateTransition or on the existence of the target
+            // Choose a new target based on a stateTransition or on the existence of the current target
             if (m_stateTransition || m_currentTarget == null)
             {
                 // Find a target based on the current state
@@ -169,34 +176,48 @@ namespace NeuralNetTraining
                     case CombatUnitState.AttackWeakest:
                         m_currentTarget = m_squadSupervisor.GetWeakestEnemyUnit();
                         break;
-                    case CombatUnitState.AttackMostValuable:
-                        m_currentTarget = m_squadSupervisor.GetClosestEnemyUnit(this);
-                        break;
                 }
             }
 
-            // check if the attack animation has been completely executed
-            if (m_stateFrameCount < m_attackAnimationTime)
+            // Issue the attack
+            SmartAttack(m_currentTarget);
+
+            // Wait for the beginning of the attack animation, this may include getting in weapon range and waiting for the cooldown to be done
+            if (m_unit.IsAttackFrame && !m_attackAnimProcess)
             {
-                SmartAttack(m_currentTarget);
-                if (m_unit.IsInWeaponRange(m_currentTarget))
-                {
-                    m_stateFrameCount++; // if the unit is in range and if the weapon isn't on cooldown, count the animation frames
-                }
+                m_squadSupervisor.FindEnemyUnitBehavior(m_currentTarget).QueueAttack(m_fitnessMeasure, this);
+                m_attackAnimProcess = true;
+            }
+
+            // Action is done as soon as the attack animation is done as well
+            // If the BWAPI provided information about when the projectile or strike is launched, the action could be considered as done earlier.
+            // So this Attack Action is not "frame-perfect"
+            if(m_attackAnimProcess && !m_unit.IsAttackFrame)
+            {
+                // impact?
+                m_attackAnimProcess = false;
+                m_requestDecision = true;
+                m_stateFrameCount = 0;
+            }
+        }
+
+        /// <summary>
+        /// Running away is like retreating from combat. During a constant amount of frames, the unit tries to increase the distance to its closest enemy.
+        /// </summary>
+        private void RunAway()
+        {
+            Unit closestFoe = m_squadSupervisor.GetClosestEnemyUnit(this);
+
+            if(m_stateFrameCount < m_runDuration)
+            {
+                SmartMove((m_unit.Position - closestFoe.Position) * 2 + m_unit.Position);
+                m_stateFrameCount++;
             }
             else
             {
-                m_fitnessMeasure.AddMidInfo(GenerateInputInfo());
-                m_stateFrameCount = 0;
+                // TODO compute data pair logic
                 m_requestDecision = true;
-                if (m_trainingMode)
-                {
-                    EnemyFeedbackBehavior enemyBehavior = m_squadSupervisor.FindEnemyUnitBehavior(m_unit.Target);
-                    if(enemyBehavior != null)
-                    {
-                        enemyBehavior.OnAttackLaunched(m_fitnessMeasure, this);
-                    }
-                }
+                m_stateFrameCount = 0;
             }
         }
 
@@ -209,14 +230,6 @@ namespace NeuralNetTraining
             {
                 m_unit.HoldPosition(false);
             }
-        }
-
-        /// <summary>
-        /// Retreat from combat.
-        /// </summary>
-        private void Retreat()
-        {
-            // TODO: implement retreat logic as soon as needed
         }
         #endregion
 

@@ -69,12 +69,13 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="fitnessMeasure">The attack action's fitness measure object</param>
         /// <param name="friendlyUnitBehavior">Attacking friendly unit behavior</param>
-        public void OnAttackLaunched(FitnessMeasure fitnessMeasure, CombatUnitTrainingBehavior friendlyUnitBehavior)
+        public void QueueAttack(FitnessMeasure fitnessMeasure, CombatUnitTrainingBehavior friendlyUnitBehavior)
         {
             m_attackers.Add(friendlyUnitBehavior);
             m_attackersFitness.Add(fitnessMeasure);
             m_isExpectingFeedback = true;
         }
+
         #endregion
 
         #region Behavior Logic

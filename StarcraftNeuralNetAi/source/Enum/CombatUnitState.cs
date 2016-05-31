@@ -7,8 +7,7 @@
     {
         AttackClosest,
         AttackWeakest,
-        AttackMostValuable,
-        SquadState,
-        Retreat
+        RunAway,
+        SquadState
     };
 }
