@@ -21,12 +21,13 @@ namespace NeuralNetTraining
         // Unit related props
         private Unit m_unit;
         private int m_initialHitPoints;
+        private bool m_isAlive = true;
 
         // State and decision fields
         private SquadSupervisor m_squadSupervisor;
         private NeuralNetController m_neuralNetController;
         private BasicNetwork m_neuralNet;
-        private FitnessMeasure m_fitnessMeasure;
+        private AttackFitnessMeasure m_fitnessMeasure;
         private bool m_requestDecision = true;
         private CombatUnitState m_currentState = CombatUnitState.SquadState;
         private bool m_stateTransition = true;
@@ -56,6 +57,22 @@ namespace NeuralNetTraining
             get
             {
                 return this.m_unit;
+            }
+        }
+
+        /// <summary>
+        /// Sets and gets the alive state of the unit.
+        /// </summary>
+        public bool IsAlive
+        {
+            get
+            {
+                return this.m_isAlive;
+            }
+
+            set
+            {
+                this.m_isAlive = value;
             }
         }
         #endregion
@@ -97,32 +114,39 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnFrame()
         {
-            // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
-            if (m_requestDecision && m_squadSupervisor.EnemyCount > 0)
+            if (IsAlive)
             {
-                MakeDecision();
-            }
-            else if (m_squadSupervisor.EnemyCount == 0)
-            {
-                m_currentState = CombatUnitState.SquadState;
-            }
+                // requestDecision is used to limit the state execution. For example, an attack action needs 3 frames in order to be executed properly.
+                if (m_requestDecision && m_squadSupervisor.EnemyCount > 0)
+                {
+                    MakeDecision();
+                }
+                else if (m_squadSupervisor.EnemyCount == 0)
+                {
+                    m_currentState = CombatUnitState.SquadState;
+                }
 
-            // state execution, the states will determine which target to go for
-            if (m_currentState == CombatUnitState.SquadState)
-            {
-                SquadState();
-            }
-            else if(m_currentState == CombatUnitState.RunAway)
-            {
-                RunAway();
+                // state execution, the states will determine which target to go for
+                if (m_currentState == CombatUnitState.SquadState)
+                {
+                    SquadState();
+                }
+                else if (m_currentState == CombatUnitState.RunAway)
+                {
+                    RunAway();
+                }
+                else
+                {
+                    AttackAction();
+                }
+
+                // Debug Visualization
+                DrawUnitInfo();
             }
             else
             {
-                AttackAction();
+                
             }
-
-            // Debug Visualization
-            DrawUnitInfo();
         }
 
         /// <summary>
@@ -137,7 +161,8 @@ namespace NeuralNetTraining
             if (m_trainingMode)
             {
                 IMLData outData = m_neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
-                m_fitnessMeasure = new FitnessMeasure(inputInfo, newState, outData);          // initialize FitnessMeasure
+                // initialize AttackFitnessMeasure with the current inputs, the random state, the computed network output and the first capture of the friendly state.
+                m_fitnessMeasure = new AttackFitnessMeasure(inputInfo, newState, outData, new FriendlyStateRecord(m_unit.HitPoints, m_squadSupervisor.GetSquadHealth(), m_squadSupervisor.FriendlyCount));
             }
             else
             {
@@ -195,6 +220,7 @@ namespace NeuralNetTraining
             if(m_attackAnimProcess && !m_unit.IsAttackFrame)
             {
                 // impact?
+                FriendlyStateRecord finalFriendlyStateRecord = new FriendlyStateRecord(m_unit.HitPoints, m_squadSupervisor.GetSquadHealth(), m_squadSupervisor.FriendlyCount);
                 m_attackAnimProcess = false;
                 m_requestDecision = true;
                 m_stateFrameCount = 0;

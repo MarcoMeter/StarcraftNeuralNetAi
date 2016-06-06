@@ -12,13 +12,19 @@ namespace NeuralNetTraining
     /// The fitness measure is based on a few state recordings. It compares the losses of the friendly units with enemy ones on different points in time. The result is used to favor or disfavor the executed action's output.
     /// The utility of attack actions get evaluated this way.
     /// </summary>
-    public class FitnessMeasure
+    public class AttackFitnessMeasure
     {
         #region Member Fields
-        private InputInformation m_initialInfo;
+        private InputInformation m_inputInfo;
         private CombatUnitState m_randomOutput;
         private IMLData m_computedOutput;
         private NeuralNetController m_neuralNetController;
+
+        // Friendly and enemy state records
+        private FriendlyStateRecord m_initialFriendlyState;
+        private FriendlyStateRecord m_finalFriendlyState;
+        private EnemyStateRecord m_initialEnemyState;
+        private EnemyStateRecord m_finalEnemyState;
         #endregion
 
         #region Constructor
@@ -26,15 +32,16 @@ namespace NeuralNetTraining
         /// Based on the initial state of the combat, the random action to be executed and the computed outputs by the net, the FitnessMeasure is getting initialized.
         /// The actual fitness is measured after supplying the final state of the combat.
         /// </summary>
-        /// <param name="initial">The initial input information, which was used to feed the neural net.</param>
+        /// <param name="inputInfo">The initial input information, which was used to feed the neural net.</param>
         /// <param name="randomAction">The chosen action by random.</param>
         /// <param name="computedOutput">The computed outputs by the neural net.</param>
-        public FitnessMeasure(InputInformation initial, CombatUnitState randomAction, IMLData computedOutput)
+        public AttackFitnessMeasure(InputInformation inputInfo, CombatUnitState randomAction, IMLData computedOutput, FriendlyStateRecord initialFriendlyState)
         {
-            this.m_initialInfo = initial;
+            this.m_inputInfo = inputInfo;
             this.m_randomOutput = randomAction;
             this.m_computedOutput = computedOutput;
             this.m_neuralNetController = NeuralNetController.Instance;
+            this.m_initialFriendlyState = initialFriendlyState;
         }
         #endregion
 
@@ -49,8 +56,8 @@ namespace NeuralNetTraining
         public void ComputeDataPair(InputInformation final)
         {
             // assign the state recordings
-            double[] friendlyInitial = m_initialInfo.GetFriendlyInfo();
-            double[] enemyInitial = m_initialInfo.GetEnemyInfo();
+            double[] friendlyInitial = m_inputInfo.GetFriendlyInfo();
+            double[] enemyInitial = m_inputInfo.GetEnemyInfo();
             double[] friendlyFinal = final.GetFriendlyInfo();
             double[] enemyFinal = final.GetEnemyInfo();
             double friendRatio = 0;
@@ -120,7 +127,7 @@ namespace NeuralNetTraining
             }
 
             // create and return the data pair made of the initial input information and 
-            BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(m_initialInfo.GetNormalizedData()), new BasicMLData(output));
+            BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(m_inputInfo.GetNormalizedData()), new BasicMLData(output));
             //PersistenceUtil.WriteLine("Desired Output : " + pair.Ideal.ToString());
             //PersistenceUtil.WriteLine("<<< END FITNESS >>>");
             m_neuralNetController.AddTrainingDataPair(pair);

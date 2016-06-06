@@ -34,7 +34,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_friendlyCombatUnits.Count;
+                return Game.Self.Units.Count;
             }
         }
 
@@ -45,7 +45,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_enemyCombatUnits.Count;
+                return Game.Enemy.Units.Count;
             }
         }
 
@@ -72,6 +72,22 @@ namespace NeuralNetTraining
         #endregion
 
         #region Public Functions
+        /// <summary>
+        /// Sums the current hit points of the friendly units.
+        /// </summary>
+        /// <returns>Returns the total hit points of the squad's units.</returns>
+        public int GetSquadHealth()
+        {
+            int health = 0;
+
+            foreach (Unit unit in Game.Self.Units)
+            {
+                health += unit.HitPoints;
+            }
+
+            return health;
+        }
+
         /// <summary>
         /// Add friendly combat units to the list of the SquadSupervisor.
         /// </summary>
@@ -143,13 +159,13 @@ namespace NeuralNetTraining
             double distance = double.MaxValue;
 
             // loop through all enemy units and search for the closest one
-            foreach(EnemyFeedbackBehavior behavior in m_enemyCombatUnits)
+            foreach(Unit unit in Game.Enemy.Units)
             {
-                double tempDistance = behavior.Unit.Distance(requestingUnit.Unit);
+                double tempDistance = unit.Distance(requestingUnit.Unit);
 
                 if(tempDistance < distance)
                 {
-                    closestUnit = behavior.Unit;
+                    closestUnit = unit;
                     distance = tempDistance;
                 }
             }
@@ -181,8 +197,9 @@ namespace NeuralNetTraining
         {
             if (m_enemyCombatUnits.Count > 0)
             {
-                List<EnemyFeedbackBehavior> sortedByHitPoints = m_enemyCombatUnits.OrderByDescending(behavior => behavior.Unit.HitPoints).ToList();
-                return sortedByHitPoints[0].Unit;
+                //List<EnemyFeedbackBehavior> sortedByHitPoints = m_enemyCombatUnits.OrderByDescending(behavior => behavior.Unit.HitPoints).ToList();
+                List<Unit> sorted = Game.Enemy.Units.OrderByDescending(unit => unit.HitPoints).ToList();
+                return sorted[0];
             }
             else
             {
@@ -239,18 +256,18 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// OnUnitDestroy event which is triggered by the TrainingModule
+        /// OnUnitDestroy event which is triggered by the TrainingModule. It sets the IsAlive property of the particular unit behavior to false.
         /// </summary>
         public void OnUnitDestroy(Unit destroyedUnit)
         {
             // Update friendly or enemy combat unit list
             if (destroyedUnit.Player.Id != Game.Self.Id)
             {
-                m_enemyCombatUnits.Remove(FindEnemyUnitBehavior(destroyedUnit));
+                FindEnemyUnitBehavior(destroyedUnit).IsAlive = false;
             }
             else
             {
-                m_friendlyCombatUnits.Remove(FindFriendlyUnitBehavior(destroyedUnit));
+                FindFriendlyUnitBehavior(destroyedUnit).IsAlive = false;
             }
         }
         #endregion

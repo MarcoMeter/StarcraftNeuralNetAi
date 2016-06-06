@@ -89,6 +89,7 @@ namespace NeuralNetTraining
                 m_isEnemySquadInitialized = true;
             }
 
+            // initialize a handshake test to check if both game instances are ready
             if(Game.FrameCount == 10)
             {
                 Game.SendText(m_handshakeMessage + m_trainingMode.ToString()); // trigger handshake

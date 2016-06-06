@@ -11,14 +11,15 @@ namespace NeuralNetTraining
     public class EnemyFeedbackBehavior
     {
         #region Members Fields
-        // Unit specifics
+        // Unit related props
         private Unit m_unit;
         private int m_hitPoints;
+        private bool m_isAlive = true;
         private SquadSupervisor m_squadSupervisor;
 
         // Attack feedback
         private List<CombatUnitTrainingBehavior> m_attackers = new List<CombatUnitTrainingBehavior>();
-        private List<FitnessMeasure> m_attackersFitness = new List<FitnessMeasure>();
+        private List<AttackFitnessMeasure> m_attackersFitness = new List<AttackFitnessMeasure>();
         private bool m_isExpectingFeedback = false;
 
         private bool m_trainingMode;
@@ -46,6 +47,22 @@ namespace NeuralNetTraining
                 return this.m_squadSupervisor;
             }
         }
+
+        /// <summary>
+        /// Sets and gets the alive state of the unit.
+        /// </summary>
+        public bool IsAlive
+        {
+            get
+            {
+                return this.m_isAlive;
+            }
+
+            set
+            {
+                this.m_isAlive = value;
+            }
+        }
         #endregion
 
         #region Constructor
@@ -69,7 +86,7 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="fitnessMeasure">The attack action's fitness measure object</param>
         /// <param name="friendlyUnitBehavior">Attacking friendly unit behavior</param>
-        public void QueueAttack(FitnessMeasure fitnessMeasure, CombatUnitTrainingBehavior friendlyUnitBehavior)
+        public void QueueAttack(AttackFitnessMeasure fitnessMeasure, CombatUnitTrainingBehavior friendlyUnitBehavior)
         {
             m_attackers.Add(friendlyUnitBehavior);
             m_attackersFitness.Add(fitnessMeasure);
@@ -84,21 +101,28 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnFrame()
         {
-            if (m_isExpectingFeedback && m_trainingMode)
+            if (IsAlive)
             {
-                // check if damage is taken
-                if (m_unit.HitPoints < m_hitPoints)
+                if (m_isExpectingFeedback && m_trainingMode)
                 {
-                    int totalDamage = m_hitPoints - m_unit.HitPoints;
-                    if (m_attackers.Count > 0)
+                    // check if damage is taken
+                    if (m_unit.HitPoints < m_hitPoints)
                     {
-                        m_attackersFitness[0].ComputeDataPair(m_attackers[0].GenerateInputInfo());
-                        m_attackers.RemoveAt(0);
-                        m_attackersFitness.RemoveAt(0);
+                        int totalDamage = m_hitPoints - m_unit.HitPoints;
+                        if (m_attackers.Count > 0)
+                        {
+                            m_attackersFitness[0].ComputeDataPair(m_attackers[0].GenerateInputInfo());
+                            m_attackers.RemoveAt(0);
+                            m_attackersFitness.RemoveAt(0);
+                        }
+                        m_hitPoints = m_unit.HitPoints;
+                        //isExpectingFeedback = false;
                     }
-                    m_hitPoints = m_unit.HitPoints;
-                    //isExpectingFeedback = false;
                 }
+            }
+            else
+            {
+
             }
         }
         #endregion
