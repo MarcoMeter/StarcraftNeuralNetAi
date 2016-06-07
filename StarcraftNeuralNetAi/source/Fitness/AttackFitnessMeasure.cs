@@ -19,12 +19,6 @@ namespace NeuralNetTraining
         private CombatUnitState m_randomOutput;
         private IMLData m_computedOutput;
         private NeuralNetController m_neuralNetController;
-
-        // Friendly and enemy state records
-        private FriendlyStateRecord m_initialFriendlyState;
-        private FriendlyStateRecord m_finalFriendlyState;
-        private EnemyStateRecord m_initialEnemyState;
-        private EnemyStateRecord m_finalEnemyState;
         #endregion
 
         #region Constructor
@@ -35,13 +29,12 @@ namespace NeuralNetTraining
         /// <param name="inputInfo">The initial input information, which was used to feed the neural net.</param>
         /// <param name="randomAction">The chosen action by random.</param>
         /// <param name="computedOutput">The computed outputs by the neural net.</param>
-        public AttackFitnessMeasure(InputInformation inputInfo, CombatUnitState randomAction, IMLData computedOutput, FriendlyStateRecord initialFriendlyState)
+        public AttackFitnessMeasure(InputInformation inputInfo, CombatUnitState randomAction, IMLData computedOutput)
         {
             this.m_inputInfo = inputInfo;
             this.m_randomOutput = randomAction;
             this.m_computedOutput = computedOutput;
             this.m_neuralNetController = NeuralNetController.Instance;
-            this.m_initialFriendlyState = initialFriendlyState;
         }
         #endregion
 

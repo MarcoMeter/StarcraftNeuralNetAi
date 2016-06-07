@@ -102,7 +102,7 @@ namespace NeuralNetTraining
         public InputInformation GenerateInputInfo()
         {
             InputInformation info = m_squadSupervisor.GlobalInputInfo;
-            info.CompleteInputData(m_unit.HitPoints, m_initialHitPoints);
+            info.CompleteInputData(m_unit.HitPoints, m_initialHitPoints, m_unit.Distance(m_squadSupervisor.GetClosestEnemyUnit(this)));
             return info;
         }
         #endregion
@@ -161,8 +161,8 @@ namespace NeuralNetTraining
             if (m_trainingMode)
             {
                 IMLData outData = m_neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
-                // initialize AttackFitnessMeasure with the current inputs, the random state, the computed network output and the first capture of the friendly state.
-                m_fitnessMeasure = new AttackFitnessMeasure(inputInfo, newState, outData, new FriendlyStateRecord(m_unit.HitPoints, m_squadSupervisor.GetSquadHealth(), m_squadSupervisor.FriendlyCount));
+                // initialize AttackFitnessMeasure with the current inputs, the random state and the computed network output
+                m_fitnessMeasure = new AttackFitnessMeasure(inputInfo, newState, outData);
             }
             else
             {
@@ -220,7 +220,7 @@ namespace NeuralNetTraining
             if(m_attackAnimProcess && !m_unit.IsAttackFrame)
             {
                 // impact?
-                FriendlyStateRecord finalFriendlyStateRecord = new FriendlyStateRecord(m_unit.HitPoints, m_squadSupervisor.GetSquadHealth(), m_squadSupervisor.FriendlyCount);
+                
                 m_attackAnimProcess = false;
                 m_requestDecision = true;
                 m_stateFrameCount = 0;

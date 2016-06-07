@@ -3,6 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+
+/*
+
+Not in use right now. Might come in handy to make the InputInformation.cs less complex.
+
+*/
+
+
+
 namespace NeuralNetTraining
 {
     /// <summary>

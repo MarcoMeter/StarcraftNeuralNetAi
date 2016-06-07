@@ -13,12 +13,24 @@ namespace NeuralNetTraining
     {
         #region Member Fields
         // Known by SquadSupervisor
+        // Enemy
         private double m_enemyHitPoints;
         private double m_initialEnemyHitPoints;
+        private double m_enemySquadCount;
+        private double m_initialEnemySquadCount;
+        private const double m_distanceNormalizer = 50;
+        // Friendly
+        private double m_friendlySquadHitPoints;
+        private double m_initialFriendlySquadHitPoints;
+        private double m_friendlySquadCount;
+        private double m_initialFriendlySquadCount;
         // Known by CombatUnitTrainingBehavior
+        // Friendly
         private double m_localHitPoints;
         private double m_initialLocalHitPoints;
-        private bool m_isCompleted = false;
+        private double m_closestEnemyDistance;
+
+        private bool m_isCompleted = false; // the SquadSUpervisor initializes this object, the missing information is contributed by the individual unit
         #endregion
 
         #region Constructor
@@ -27,10 +39,17 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="enemyHp">overall enemy combat units hit points</param>
         /// <param name="initialEnemyHp">overall and initial enemy bombat units hit points</param>
-        public InputInformation(int enemyHp, int initialEnemyHp)
+        public InputInformation(int enemyHp, int initialEnemyHp, int enemySquadCount, int initialEnemySquadCount,
+            int friendlySquadHp, int initialFriendlySquadHp, int friendlySuqadCount, int initialFriendlySquadCount)
         {
             this.m_enemyHitPoints = enemyHp;
             this.m_initialEnemyHitPoints = initialEnemyHp;
+            this.m_enemySquadCount = enemySquadCount;
+            this.m_initialEnemySquadCount = initialEnemySquadCount;
+            this.m_friendlySquadHitPoints = friendlySquadHp;
+            this.m_initialFriendlySquadHitPoints = initialFriendlySquadHp;
+            this.m_friendlySquadCount = friendlySuqadCount;
+            this.m_initialFriendlySquadCount = initialFriendlySquadCount;
         }
         #endregion
 
@@ -41,7 +60,8 @@ namespace NeuralNetTraining
         /// <returns>Normalized array of input information for the neural net.</returns>
         public double[] GetNormalizedData()
         {
-            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints, m_localHitPoints / m_initialLocalHitPoints};
+            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints, m_enemySquadCount / m_initialEnemySquadCount, m_closestEnemyDistance / m_distanceNormalizer,
+                m_friendlySquadHitPoints / m_initialFriendlySquadHitPoints, m_friendlySquadCount / m_initialFriendlySquadCount, m_localHitPoints / m_initialLocalHitPoints,};
         }
 
         /// <summary>
@@ -49,10 +69,11 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="hitPoints">current hit points of the friendly combat unit</param>
         /// <param name="initialHitPoints">initial hit points of the friendly combat unit</param>
-        public void CompleteInputData(int hitPoints, int initialHitPoints)
+        public void CompleteInputData(int hitPoints, int initialHitPoints, double closestEnemyDistance)
         {
             this.m_localHitPoints = (double)hitPoints;
             this.m_initialLocalHitPoints = (double)initialHitPoints;
+            this.m_closestEnemyDistance = closestEnemyDistance;
             this.m_isCompleted = true;
         }
 
@@ -62,7 +83,7 @@ namespace NeuralNetTraining
         /// <returns>Returns all normalized friendly values as array.</returns>
         public double[] GetFriendlyInfo()
         {
-            return new double[] {m_localHitPoints / m_initialLocalHitPoints};
+            return new double[] {m_localHitPoints / m_initialLocalHitPoints, m_friendlySquadCount / m_initialFriendlySquadCount};
         }
 
         /// <summary>
@@ -71,30 +92,16 @@ namespace NeuralNetTraining
         /// <returns>Returns all normalized enemy values as array.</returns>
         public double[] GetEnemyInfo()
         {
-            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints};
+            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints, m_enemySquadCount / m_initialEnemySquadCount};
         }
 
         public bool IsCompleted()
         {
             return m_isCompleted;
         }
-
-        /*
-        public override String ToString()
-        {
-            return "Squad hp : " + squadHitPoints + ", Squad count : " + squadCount + ", Squad dpf : " + squadDpf + ", Enemy squad hp : " + enemyHitPoints + ", Enemy squad count : " + enemySquadCount +
-                ", enemy squad dpf : " + enenmyDpf + ", Local hp : " + localHitPoints + ", Local dpf : " + localDpf;
-        }
-        */
-
-        public override string ToString()
-        {
-            return "HP F: " + m_localHitPoints + "   HP E: " + m_enemyHitPoints;
-        }
         #endregion
 
         #region Local Functions
-
         #endregion
     }
 }

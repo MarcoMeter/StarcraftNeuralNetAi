@@ -287,7 +287,7 @@ namespace NeuralNetTraining
                 enemyHP += behavior.Unit.HitPoints;
             }
 
-            InputInformation info = new InputInformation(enemyHP, m_initialEnemySquadHp);
+            InputInformation info = new InputInformation(enemyHP, m_initialEnemySquadHp, EnemyCount, m_initialEnemySquadCount, GetSquadHealth(), m_initialSquadHp, FriendlyCount, m_initialSquadCount);
             
             return info;
         }
