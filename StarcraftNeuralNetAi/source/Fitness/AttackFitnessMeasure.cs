@@ -15,10 +15,27 @@ namespace NeuralNetTraining
     public class AttackFitnessMeasure
     {
         #region Member Fields
-        private InputInformation m_inputInfo;
+        private InputInformation m_initialInputInfo;
+        private InputInformation m_secondInputInfo;
+        private InputInformation m_finalInputInfo;
         private CombatUnitState m_randomOutput;
         private IMLData m_computedOutput;
         private NeuralNetController m_neuralNetController;
+        #endregion
+
+        #region Member Properties
+        public InputInformation SecondInputInfo
+        {
+            get
+            {
+                return this.m_secondInputInfo;
+            }
+
+            set
+            {
+                this.m_secondInputInfo = value;
+            }
+        }
         #endregion
 
         #region Constructor
@@ -31,7 +48,7 @@ namespace NeuralNetTraining
         /// <param name="computedOutput">The computed outputs by the neural net.</param>
         public AttackFitnessMeasure(InputInformation inputInfo, CombatUnitState randomAction, IMLData computedOutput)
         {
-            this.m_inputInfo = inputInfo;
+            this.m_initialInputInfo = inputInfo;
             this.m_randomOutput = randomAction;
             this.m_computedOutput = computedOutput;
             this.m_neuralNetController = NeuralNetController.Instance;
@@ -44,25 +61,25 @@ namespace NeuralNetTraining
         /// In order to complete the measure of how good that action was, the final state (after executing an action) has to be supplied.
         /// After that, the desired output gets computed and a data pair based on the initial input with the new desired output is getting returned.
         /// </summary>
-        /// <param name="final">Add the final InputInformation in order to compare the initial and final state of the combat which has been altered after executing an action.</param>
+        /// <param name="finalInputInfo">Add the final InputInformation in order to compare the initial and final state of the combat which has been altered after executing an action.</param>
         /// <returns>Returns a data pair based on the initial input and the computed desired output.</returns>
-        public void ComputeDataPair(InputInformation final)
+        public void ComputeDataPair(InputInformation finalInputInfo)
         {
             // assign the state recordings
-            double[] friendlyInitial = m_inputInfo.GetFriendlyInfo();
-            double[] enemyInitial = m_inputInfo.GetEnemyInfo();
-            double[] friendlyFinal = final.GetFriendlyInfo();
-            double[] enemyFinal = final.GetEnemyInfo();
+            double[] friendlyInitial = m_initialInputInfo.GetFriendlyInfo();
+            double[] enemyInitial = m_secondInputInfo.GetEnemyInfo();
+            double[] friendlyFinal = m_secondInputInfo.GetFriendlyInfo();
+            double[] enemyFinal = finalInputInfo.GetEnemyInfo();
             double friendRatio = 0;
             double enemyRatio = 0;
             int ratioDataCount = 0;
 
-            //PersistenceUtil.WriteLine("<<< START FITNESS >>>");
-            //PersistenceUtil.WriteLine("Random Action : " + (int)m_randomOutput + " " + m_randomOutput.ToString());
-            //PersistenceUtil.WriteLine("Initial Friend: " + String.Join(",", friendlyInitial.Select(p => p.ToString()).ToArray()));
-            //PersistenceUtil.WriteLine("Initial Enemy : " + String.Join(",", enemyInitial.Select(p => p.ToString()).ToArray()));
-            //PersistenceUtil.WriteLine("Final   Friend: " + String.Join(",", friendlyFinal.Select(p => p.ToString()).ToArray()));
-            //PersistenceUtil.WriteLine("Final   Enemy : " + String.Join(",", enemyFinal.Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("<<< START FITNESS >>>");
+            PersistenceUtil.WriteLine("Random Action : " + (int)m_randomOutput + " " + m_randomOutput.ToString());
+            PersistenceUtil.WriteLine("Initial Friend: " + String.Join(",", friendlyInitial.Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("Initial Enemy : " + String.Join(",", enemyInitial.Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("Final   Friend: " + String.Join(",", friendlyFinal.Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("Final   Enemy : " + String.Join(",", enemyFinal.Select(p => p.ToString()).ToArray()));
 
             // compute friendly ratio
             for (int i = 0; i < friendlyFinal.Length; i++)
@@ -79,7 +96,7 @@ namespace NeuralNetTraining
                 friendRatio /= ratioDataCount;
             }
 
-            //PersistenceUtil.WriteLine("Ratio   Friend: " + friendRatio);
+            PersistenceUtil.WriteLine("Ratio   Friend: " + friendRatio);
             ratioDataCount = 0;
             
             // compute enemy ratio
@@ -97,13 +114,13 @@ namespace NeuralNetTraining
                 enemyRatio /= ratioDataCount;
             }
 
-            //PersistenceUtil.WriteLine("Ratio   Enemy : " + enemyRatio);
+            PersistenceUtil.WriteLine("Ratio   Enemy : " + enemyRatio);
 
             // compute the adjustment for the desired output
             double desiredAdjustment = 1 + (friendRatio - enemyRatio);
 
-            //PersistenceUtil.WriteLine("Computed Output: " + m_computedOutput.ToString());
-            //PersistenceUtil.WriteLine("Adjustment    : " + desiredAdjustment);
+            PersistenceUtil.WriteLine("Computed Output: " + m_computedOutput.ToString());
+            PersistenceUtil.WriteLine("Adjustment    : " + desiredAdjustment);
 
             // convert output and make adjustments to the desired and undesired outputs
             double[] output = new double[m_computedOutput.Count];
@@ -120,9 +137,9 @@ namespace NeuralNetTraining
             }
 
             // create and return the data pair made of the initial input information and 
-            BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(m_inputInfo.GetNormalizedData()), new BasicMLData(output));
-            //PersistenceUtil.WriteLine("Desired Output : " + pair.Ideal.ToString());
-            //PersistenceUtil.WriteLine("<<< END FITNESS >>>");
+            BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(m_initialInputInfo.GetNormalizedData()), new BasicMLData(output));
+            PersistenceUtil.WriteLine("Desired Output : " + pair.Ideal.ToString());
+            PersistenceUtil.WriteLine("<<< END FITNESS >>>");
             m_neuralNetController.AddTrainingDataPair(pair);
         }
         #endregion

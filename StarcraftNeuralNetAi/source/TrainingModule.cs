@@ -14,7 +14,7 @@ namespace NeuralNetTraining
         #region Member Fields
         // Match info
         private static int m_matchNumber = 0;
-        private static bool m_trainingMode = true;
+        private static bool m_trainingMode = false;
 
         // To be initialized
         private SquadSupervisor m_squadSupervisor;

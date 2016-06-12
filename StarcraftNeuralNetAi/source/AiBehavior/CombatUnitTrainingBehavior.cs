@@ -8,6 +8,7 @@ using Encog.Persist;
 using NeuralNetTraining.Utility;
 using Encog.ML.Data.Basic;
 using Encog.ML.Data;
+using System.Collections.Generic;
 
 namespace NeuralNetTraining
 {
@@ -28,9 +29,11 @@ namespace NeuralNetTraining
         private NeuralNetController m_neuralNetController;
         private BasicNetwork m_neuralNet;
         private AttackFitnessMeasure m_fitnessMeasure;
+        private List<AttackFitnessMeasure> m_fitnessMeasureStack = new List<AttackFitnessMeasure>();
         private bool m_requestDecision = true;
         private CombatUnitState m_currentState = CombatUnitState.SquadState;
         private bool m_stateTransition = true;
+        private const int m_outputActionsCount = 2;
 
         // Attack action
         private Unit m_currentTarget;
@@ -156,7 +159,7 @@ namespace NeuralNetTraining
         {
             InputInformation inputInfo = GenerateInputInfo();   // request input information
             double[] inputData = inputInfo.GetNormalizedData(); // normalize data
-            CombatUnitState newState = (CombatUnitState)GeneralUtil.RandomNumberGenerator.Next(3);      // determine random action
+            CombatUnitState newState = (CombatUnitState)GeneralUtil.RandomNumberGenerator.Next(m_outputActionsCount);      // determine random action
 
             if (m_trainingMode)
             {
@@ -210,7 +213,6 @@ namespace NeuralNetTraining
             // Wait for the beginning of the attack animation, this may include getting in weapon range and waiting for the cooldown to be done
             if (m_unit.IsAttackFrame && !m_attackAnimProcess)
             {
-                m_squadSupervisor.FindEnemyUnitBehavior(m_currentTarget).QueueAttack(m_fitnessMeasure, this);
                 m_attackAnimProcess = true;
             }
 
@@ -219,11 +221,27 @@ namespace NeuralNetTraining
             // So this Attack Action is not "frame-perfect"
             if(m_attackAnimProcess && !m_unit.IsAttackFrame)
             {
-                // impact?
-                
+                if (m_trainingMode)
+                {
+                    m_squadSupervisor.FindEnemyUnitBehavior(m_currentTarget).QueueAttack(this);
+                    m_fitnessMeasure.SecondInputInfo = GenerateInputInfo();
+                    m_fitnessMeasureStack.Add(m_fitnessMeasure);
+                }
                 m_attackAnimProcess = false;
                 m_requestDecision = true;
                 m_stateFrameCount = 0;
+            }
+        }
+
+        /// <summary>
+        /// The attacked enemy unit notifies its attacker.
+        /// </summary>
+        public void EnemyImpactMessage()
+        {
+            if(m_fitnessMeasureStack.Count > 0)
+            {
+                m_fitnessMeasureStack[0].ComputeDataPair(GenerateInputInfo());
+                m_fitnessMeasureStack.RemoveAt(0);
             }
         }
 

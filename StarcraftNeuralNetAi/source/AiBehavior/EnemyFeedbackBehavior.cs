@@ -84,13 +84,10 @@ namespace NeuralNetTraining
         /// <summary>
         /// A friendly unit trigger the launch of a strike or projectile and makes this enemy combat unit to await feedback.
         /// </summary>
-        /// <param name="fitnessMeasure">The attack action's fitness measure object</param>
         /// <param name="friendlyUnitBehavior">Attacking friendly unit behavior</param>
-        public void QueueAttack(AttackFitnessMeasure fitnessMeasure, CombatUnitTrainingBehavior friendlyUnitBehavior)
+        public void QueueAttack(CombatUnitTrainingBehavior friendlyUnitBehavior)
         {
             m_attackers.Add(friendlyUnitBehavior);
-            m_attackersFitness.Add(fitnessMeasure);
-            m_isExpectingFeedback = true;
         }
 
         #endregion
@@ -101,28 +98,14 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnFrame()
         {
-            if (IsAlive)
+            if (m_attackers.Count > 0 && m_trainingMode)
             {
-                if (m_isExpectingFeedback && m_trainingMode)
+                // check if damage is taken
+                if (m_unit.HitPoints < m_hitPoints)
                 {
-                    // check if damage is taken
-                    if (m_unit.HitPoints < m_hitPoints)
-                    {
-                        int totalDamage = m_hitPoints - m_unit.HitPoints;
-                        if (m_attackers.Count > 0)
-                        {
-                            m_attackersFitness[0].ComputeDataPair(m_attackers[0].GenerateInputInfo());
-                            m_attackers.RemoveAt(0);
-                            m_attackersFitness.RemoveAt(0);
-                        }
-                        m_hitPoints = m_unit.HitPoints;
-                        //isExpectingFeedback = false;
-                    }
+                    m_attackers[0].EnemyImpactMessage();
+                    m_attackers.RemoveAt(0);
                 }
-            }
-            else
-            {
-
             }
         }
         #endregion

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrainingModule", "Starcraft
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttackAnalysisModule", "AttackAnalysisModule\AttackAnalysisModule.csproj", "{011D71B5-97AD-44D3-9102-649B5E8ED1AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetBuilderCSV", "NeuralNetBuilderCSV\NeuralNetBuilderCSV.csproj", "{BFEEE892-33CA-4411-9B8F-26E522DBE96B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,22 @@ Global
 		{011D71B5-97AD-44D3-9102-649B5E8ED1AB}.Release|x64.Build.0 = Release|Any CPU
 		{011D71B5-97AD-44D3-9102-649B5E8ED1AB}.Release|x86.ActiveCfg = Release|Any CPU
 		{011D71B5-97AD-44D3-9102-649B5E8ED1AB}.Release|x86.Build.0 = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|ARM.Build.0 = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|x64.Build.0 = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Debug|x86.Build.0 = Debug|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|ARM.ActiveCfg = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|ARM.Build.0 = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|x64.ActiveCfg = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|x64.Build.0 = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|x86.ActiveCfg = Release|Any CPU
+		{BFEEE892-33CA-4411-9B8F-26E522DBE96B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
