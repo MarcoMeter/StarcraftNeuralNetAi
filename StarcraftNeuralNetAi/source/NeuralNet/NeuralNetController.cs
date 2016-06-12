@@ -75,9 +75,9 @@ namespace NeuralNetTraining
             if(this.m_neuralNet == null)
             {
                 this.m_neuralNet = new BasicNetwork();
-                this.m_neuralNet.AddLayer(new BasicLayer(null, true, 6)); // input layer
+                this.m_neuralNet.AddLayer(new BasicLayer(null, true, 5)); // input layer
                 this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 20)); // #1 hidden layer
-                this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 2)); // output layer
+                this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 3)); // output layer
                 this.m_neuralNet.Structure.FinalizeStructure();
                 this.m_neuralNet.Reset(); // initializes the weights of the neural net
             }

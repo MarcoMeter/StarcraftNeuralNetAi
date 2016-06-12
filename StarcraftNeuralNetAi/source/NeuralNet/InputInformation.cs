@@ -18,7 +18,6 @@ namespace NeuralNetTraining
         private double m_initialEnemyHitPoints;
         private double m_enemySquadCount;
         private double m_initialEnemySquadCount;
-        private const double m_distanceNormalizer = 50;
         // Friendly
         private double m_friendlySquadHitPoints;
         private double m_initialFriendlySquadHitPoints;
@@ -28,7 +27,6 @@ namespace NeuralNetTraining
         // Friendly
         private double m_localHitPoints;
         private double m_initialLocalHitPoints;
-        private double m_closestEnemyDistance;
 
         private bool m_isCompleted = false; // the SquadSUpervisor initializes this object, the missing information is contributed by the individual unit
         #endregion
@@ -60,7 +58,7 @@ namespace NeuralNetTraining
         /// <returns>Normalized array of input information for the neural net.</returns>
         public double[] GetNormalizedData()
         {
-            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints, m_enemySquadCount / m_initialEnemySquadCount, m_closestEnemyDistance / m_distanceNormalizer,
+            return new double[] {m_enemyHitPoints / m_initialEnemyHitPoints, m_enemySquadCount / m_initialEnemySquadCount,
                 m_friendlySquadHitPoints / m_initialFriendlySquadHitPoints, m_friendlySquadCount / m_initialFriendlySquadCount, m_localHitPoints / m_initialLocalHitPoints,};
         }
 
@@ -73,7 +71,6 @@ namespace NeuralNetTraining
         {
             this.m_localHitPoints = (double)hitPoints;
             this.m_initialLocalHitPoints = (double)initialHitPoints;
-            this.m_closestEnemyDistance = closestEnemyDistance;
             this.m_isCompleted = true;
         }
 
