@@ -35,6 +35,11 @@ namespace NeuralNetTraining
         private bool m_stateTransition = true;
         private const int m_outputActionsCount = 2;
 
+        // Information gathering
+        private int m_infoRadiusOne;
+        private int m_infoRadiusTwo;
+        private int m_infoRadiusTwoMultiplier = 2;
+
         // Attack action
         private Unit m_currentTarget;
         private bool m_attackAnimProcess = false;
@@ -94,6 +99,8 @@ namespace NeuralNetTraining
             this.m_neuralNetController = NeuralNetController.Instance;
             this.m_neuralNet = m_neuralNetController.NeuralNet;
             this.m_trainingMode = TrainingModule.TrainingMode;
+            this.m_infoRadiusOne = unit.UnitType.GroundWeapon.MaxRange;
+            this.m_infoRadiusTwo = unit.UnitType.GroundWeapon.MaxRange * m_infoRadiusTwoMultiplier;
         }
         #endregion
 
@@ -169,7 +176,7 @@ namespace NeuralNetTraining
             }
             else
             {
-                PersistenceUtil.WriteLine(m_neuralNet.Compute(new BasicMLData(inputData)).ToString());
+                //PersistenceUtil.WriteLine(m_neuralNet.Compute(new BasicMLData(inputData)).ToString());
                 newState = (CombatUnitState)m_neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
             }
 
@@ -193,7 +200,7 @@ namespace NeuralNetTraining
         private void AttackAction()
         {
             // Choose a new target based on a stateTransition or on the existence of the current target
-            if (m_stateTransition || m_currentTarget == null)
+            if (m_stateTransition || m_currentTarget == null || m_currentTarget.HitPoints == 0)
             {
                 // Find a target based on the current state
                 switch(m_currentState)
@@ -287,6 +294,7 @@ namespace NeuralNetTraining
             // return, if the target is null or dead
             if (target == null || target.HitPoints == 0)
             {
+                PersistenceUtil.WriteLine("target hp : " + target.HitPoints + "state : " + m_currentState.ToString());
                 return;
             }
 
@@ -332,10 +340,16 @@ namespace NeuralNetTraining
         /// </summary>
         private void DrawUnitInfo()
         {
-            Game.DrawTextMap(m_unit.Position.X, m_unit.Position.Y, "{0}", m_currentState.ToString());
+            Game.DrawTextMap(m_unit.Position.X, m_unit.Position.Y, "{0}", m_currentState.ToString()); // draw the unit's state
             if (m_unit.IsStimmed)
             {
-                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y + m_stimmedCircleOff, m_stimmedCircleRadius, Color.Red, true);
+                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y + m_stimmedCircleOff, m_stimmedCircleRadius, Color.Red, true); // draw a cricle to indicate stimpack status
+            }
+
+            if (IsAlive)
+            {
+                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y, m_infoRadiusOne, Color.White, false); // draw info gathering circle #1
+                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y, m_infoRadiusTwo, Color.White, false); // draw info gathering circle #2
             }
         }
         #endregion

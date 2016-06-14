@@ -173,31 +173,13 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// Find the strongest enemy unit. For now this is based on the unit's hit points.
-        /// </summary>
-        /// <returns>Returns the strongest enemy combat unit to the requesting controlled combat unit.</returns>
-        public Unit GetStrongestEnemyUnit()
-        {
-            if (m_enemyCombatUnits.Count > 0)
-            {
-                List<EnemyFeedbackBehavior> sortedByHitPoints = m_enemyCombatUnits.OrderBy(behavior => behavior.Unit.HitPoints).ToList();
-                return sortedByHitPoints[0].Unit;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Find the weakest enemy unit. So far this is based on hit points.
         /// </summary>
         /// <returns>Returns the weakest enemy combat unit to the requesting controlled combat unit.</returns>
         public Unit GetWeakestEnemyUnit()
         {
-            if (m_enemyCombatUnits.Count > 0)
+            if (EnemyCount > 0)
             {
-                //List<EnemyFeedbackBehavior> sortedByHitPoints = m_enemyCombatUnits.OrderByDescending(behavior => behavior.Unit.HitPoints).ToList();
                 List<Unit> sorted = Game.Enemy.Units.OrderByDescending(unit => unit.HitPoints).ToList();
                 return sorted[0];
             }

@@ -33,7 +33,7 @@ namespace NeuralNetBuilderCSV
         private const int m_hiddenNodeCount = 10;
         private const int m_outputNodeCount = 3;
         // Training
-        private const double errorThreshold = 0.01;
+        private const double m_errorThreshold = 0.01;
         #endregion
 
         #region Main
@@ -54,7 +54,7 @@ namespace NeuralNetBuilderCSV
                 train.Iteration();
                 Console.WriteLine(@"Epoch #" + epoch + @"  Error : " + train.Error);
                 epoch++;
-            } while (train.Error > errorThreshold);
+            } while (train.Error > m_errorThreshold);
 
             // Save neural net
             EncogDirectoryPersistence.SaveObject(new FileInfo("csvNet.ann"), neuralNet);
