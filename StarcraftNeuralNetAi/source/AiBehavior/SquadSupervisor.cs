@@ -16,7 +16,7 @@ namespace NeuralNetTraining
         #region Member Fields
         // Friendly and foe behaviors
         private List<CombatUnitTrainingBehavior> m_friendlyCombatUnits = new List<CombatUnitTrainingBehavior>();
-        private List<EnemyFeedbackBehavior> m_enemyCombatUnits = new List<EnemyFeedbackBehavior>();
+        private List<EnemyBehavior> m_enemyCombatUnits = new List<EnemyBehavior>();
 
         // InputInfo related objects
         private InputInformation m_globalInputInfo;
@@ -103,7 +103,7 @@ namespace NeuralNetTraining
         /// Add enemy combat units to the list of the SquadSupervisor.
         /// </summary>
         /// <param name="behavior">enemy combat unit</param>
-        public void AddEnemyCombatUnit(EnemyFeedbackBehavior behavior)
+        public void AddEnemyCombatUnit(EnemyBehavior behavior)
         {
             m_enemyCombatUnits.Add(behavior);
             m_initialEnemySquadHp += behavior.Unit.HitPoints;
@@ -134,7 +134,7 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="unit">The unit to search for.</param>
         /// <returns>Returns the EnemyFeedbackBehavior for that certain unit to seek for.</returns>
-        public EnemyFeedbackBehavior FindEnemyUnitBehavior(Unit unit)
+        public EnemyBehavior FindEnemyUnitBehavior(Unit unit)
         {
             // find unit in behavior list
             for (int i = 0; i < m_enemyCombatUnits.Count; i++)
@@ -198,7 +198,7 @@ namespace NeuralNetTraining
             int x = 0;
             int y = 0;
             
-            foreach(EnemyFeedbackBehavior behavior in m_enemyCombatUnits)
+            foreach(EnemyBehavior behavior in m_enemyCombatUnits)
             {
                 x += behavior.Unit.Position.X;
                 y += behavior.Unit.Position.Y;
@@ -231,7 +231,7 @@ namespace NeuralNetTraining
             {
                 friendlyCombatUnits.OnFrame();
             }
-            foreach(EnemyFeedbackBehavior enemyComabtUnit in m_enemyCombatUnits)
+            foreach(EnemyBehavior enemyComabtUnit in m_enemyCombatUnits)
             {
                 enemyComabtUnit.OnFrame();
             }
@@ -264,7 +264,7 @@ namespace NeuralNetTraining
             int enemyHP = 0;
 
             // gather information concerning the enemy squad
-            foreach (EnemyFeedbackBehavior behavior in m_enemyCombatUnits)
+            foreach (EnemyBehavior behavior in m_enemyCombatUnits)
             {
                 enemyHP += behavior.Unit.HitPoints;
             }

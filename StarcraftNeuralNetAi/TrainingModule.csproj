@@ -61,7 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="source\AiBehavior\CombatUnitTrainingBehavior.cs" />
-    <Compile Include="source\AiBehavior\EnemyFeedbackBehavior.cs" />
+    <Compile Include="source\AiBehavior\EnemyBehavior.cs" />
+    <Compile Include="source\AiBehavior\KillCountHelper.cs" />
     <Compile Include="source\AiBehavior\SquadSupervisor.cs" />
     <Compile Include="source\Enum\CombatUnitState.cs" />
     <Compile Include="source\Fitness\EnemyStateRecord.cs" />

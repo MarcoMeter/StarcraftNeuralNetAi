@@ -14,7 +14,7 @@ namespace NeuralNetTraining
         #region Member Fields
         // Match info
         private static int m_matchNumber = 0;
-        private static bool m_trainingMode = false;
+        private static bool m_trainingMode = true;
 
         // To be initialized
         private SquadSupervisor m_squadSupervisor;
@@ -158,7 +158,7 @@ namespace NeuralNetTraining
         {
             foreach (Unit unit in Game.Enemy.Units)
             {
-                m_squadSupervisor.AddEnemyCombatUnit(new EnemyFeedbackBehavior(unit, m_squadSupervisor));
+                m_squadSupervisor.AddEnemyCombatUnit(new EnemyBehavior(unit, m_squadSupervisor));
             }
         }
 

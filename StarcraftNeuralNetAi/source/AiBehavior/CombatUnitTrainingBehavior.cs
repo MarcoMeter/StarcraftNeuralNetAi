@@ -9,6 +9,7 @@ using NeuralNetTraining.Utility;
 using Encog.ML.Data.Basic;
 using Encog.ML.Data;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace NeuralNetTraining
 {
@@ -23,6 +24,7 @@ namespace NeuralNetTraining
         private Unit m_unit;
         private int m_initialHitPoints;
         private bool m_isAlive = true;
+        private int m_killCount = 0;
 
         // State and decision fields
         private SquadSupervisor m_squadSupervisor;
@@ -43,6 +45,8 @@ namespace NeuralNetTraining
         // Attack action
         private Unit m_currentTarget;
         private bool m_attackAnimProcess = false;
+        private const int m_waitForKillCountDuration = 6;
+        private KillCountHelper m_killCountHelper;
 
         // Run action
         private const int m_runDuration = 7;
@@ -153,10 +157,8 @@ namespace NeuralNetTraining
                 // Debug Visualization
                 DrawUnitInfo();
             }
-            else
-            {
-                
-            }
+
+            ProcessKillCountHelper(); // if a KillCounter is available, it will check the unit's kill count during a specific amount of frames
         }
 
         /// <summary>
@@ -230,25 +232,23 @@ namespace NeuralNetTraining
             {
                 if (m_trainingMode)
                 {
-                    m_squadSupervisor.FindEnemyUnitBehavior(m_currentTarget).QueueAttack(this);
-                    m_fitnessMeasure.SecondInputInfo = GenerateInputInfo();
                     m_fitnessMeasureStack.Add(m_fitnessMeasure);
+                    if(m_unit.KillCount > m_killCount)
+                    {
+                        // if the kill count got increased during the attack, feedback is already existing in order to evaluate the action.
+                        m_killCount = m_unit.KillCount;
+                        //m_fitnessMeasure.ComputeDataPair(GenerateInputInfo(), true, true);
+                    }
+                    else
+                    {
+                        // This case determines if a kill occured shortly after the taken action. If no kill occured, the fitness measure will assume a succesful hit but no kill as feedback.
+                        m_killCountHelper = new KillCountHelper(m_unit, m_fitnessMeasure, GenerateInputInfo(), m_waitForKillCountDuration);
+                    }
+
                 }
                 m_attackAnimProcess = false;
                 m_requestDecision = true;
                 m_stateFrameCount = 0;
-            }
-        }
-
-        /// <summary>
-        /// The attacked enemy unit notifies its attacker.
-        /// </summary>
-        public void EnemyImpactMessage()
-        {
-            if(m_fitnessMeasureStack.Count > 0)
-            {
-                m_fitnessMeasureStack[0].ComputeDataPair(GenerateInputInfo());
-                m_fitnessMeasureStack.RemoveAt(0);
             }
         }
 
@@ -286,6 +286,26 @@ namespace NeuralNetTraining
 
         #region Local Functions
         /// <summary>
+        /// Processes the logic of the KillCountHelper. After a specific amount of frames, the helper is supposed to check the unit's kill count to give proper feedback to the action's fitness function.
+        /// That's due to the fact that hits or kills may be landed after the complete attack action.
+        /// </summary>
+        private void ProcessKillCountHelper()
+        {
+            if(m_killCountHelper != null)
+            {
+                if (m_killCountHelper.FrameDuration > 0)
+                {
+                    m_killCountHelper.DecreaseDuration(); // if frame duration is left, decrease the duration each frame
+                }
+                else
+                {
+                    m_killCountHelper.ProcessFitnessMeasure(m_unit.KillCount); // after the specific amount of time passed, let the helper check the kill count in order to finalize the fitness measure
+                    m_killCountHelper = null;
+                }
+            }
+        }
+
+        /// <summary>
         /// SmartAttack prevents issuing the same command over and over again.
         /// </summary>
         /// <param name="target">The unit to attack.</param>
@@ -294,7 +314,6 @@ namespace NeuralNetTraining
             // return, if the target is null or dead
             if (target == null || target.HitPoints == 0)
             {
-                PersistenceUtil.WriteLine("target hp : " + target.HitPoints + "state : " + m_currentState.ToString());
                 return;
             }
 

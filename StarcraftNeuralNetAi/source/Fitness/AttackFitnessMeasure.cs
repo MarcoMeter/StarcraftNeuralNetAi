@@ -16,26 +16,12 @@ namespace NeuralNetTraining
     {
         #region Member Fields
         private InputInformation m_initialInputInfo;
-        private InputInformation m_secondInputInfo;
-        private InputInformation m_finalInputInfo;
         private CombatUnitState m_randomOutput;
         private IMLData m_computedOutput;
         private NeuralNetController m_neuralNetController;
         #endregion
 
         #region Member Properties
-        public InputInformation SecondInputInfo
-        {
-            get
-            {
-                return this.m_secondInputInfo;
-            }
-
-            set
-            {
-                this.m_secondInputInfo = value;
-            }
-        }
         #endregion
 
         #region Constructor
@@ -63,12 +49,12 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="finalInputInfo">Add the final InputInformation in order to compare the initial and final state of the combat which has been altered after executing an action.</param>
         /// <returns>Returns a data pair based on the initial input and the computed desired output.</returns>
-        public void ComputeDataPair(InputInformation finalInputInfo)
+        public void ComputeDataPair(InputInformation finalInputInfo, bool hit, bool killed)
         {
             // assign the state recordings
             double[] friendlyInitial = m_initialInputInfo.GetFriendlyInfo();
-            double[] enemyInitial = m_secondInputInfo.GetEnemyInfo();
-            double[] friendlyFinal = m_secondInputInfo.GetFriendlyInfo();
+            double[] enemyInitial = m_initialInputInfo.GetEnemyInfo();
+            double[] friendlyFinal = finalInputInfo.GetFriendlyInfo();
             double[] enemyFinal = finalInputInfo.GetEnemyInfo();
             double friendRatio = 0;
             double enemyRatio = 0;

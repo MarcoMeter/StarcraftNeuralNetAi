@@ -8,7 +8,7 @@ using NeuralNetTraining.Utility;
 
 namespace NeuralNetTraining
 {
-    public class EnemyFeedbackBehavior
+    public class EnemyBehavior
     {
         #region Members Fields
         // Unit related props
@@ -16,11 +16,6 @@ namespace NeuralNetTraining
         private int m_hitPoints;
         private bool m_isAlive = true;
         private SquadSupervisor m_squadSupervisor;
-
-        // Attack feedback
-        private List<CombatUnitTrainingBehavior> m_attackers = new List<CombatUnitTrainingBehavior>();
-        private List<AttackFitnessMeasure> m_attackersFitness = new List<AttackFitnessMeasure>();
-        private bool m_isExpectingFeedback = false;
 
         private bool m_trainingMode;
         #endregion
@@ -71,7 +66,7 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="unit">Enemy unit</param>
         /// <param name="supervisor">Friendly SquadSupervisor</param>
-        public EnemyFeedbackBehavior(Unit unit, SquadSupervisor supervisor)
+        public EnemyBehavior(Unit unit, SquadSupervisor supervisor)
         {
             this.m_unit = unit;
             this.m_hitPoints = unit.HitPoints;
@@ -81,15 +76,6 @@ namespace NeuralNetTraining
         #endregion
 
         #region Public Functions
-        /// <summary>
-        /// A friendly unit trigger the launch of a strike or projectile and makes this enemy combat unit to await feedback.
-        /// </summary>
-        /// <param name="friendlyUnitBehavior">Attacking friendly unit behavior</param>
-        public void QueueAttack(CombatUnitTrainingBehavior friendlyUnitBehavior)
-        {
-            m_attackers.Add(friendlyUnitBehavior);
-        }
-
         #endregion
 
         #region Behavior Logic
@@ -98,15 +84,6 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnFrame()
         {
-            if (m_attackers.Count > 0 && m_trainingMode)
-            {
-                // check if damage is taken
-                if (m_unit.HitPoints < m_hitPoints)
-                {
-                    m_attackers[0].EnemyImpactMessage();
-                    m_attackers.RemoveAt(0);
-                }
-            }
         }
         #endregion
 
