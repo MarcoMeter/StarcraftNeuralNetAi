@@ -8,8 +8,8 @@ namespace NeuralNetTraining
     {
         #region Member Fields
         private Unit m_unit;
-        private AttackFitnessMeasure m_fitnessMeasure;
-        private InputInformation m_inputInfo;
+        private AttackFitness m_fitnessMeasure;
+        private InputVector m_inputVector;
         private int m_frameDuration;
         private int m_tempKillCount;
         #endregion
@@ -25,11 +25,11 @@ namespace NeuralNetTraining
         #endregion
 
         #region Constructor
-        public KillCountHelper(Unit unit, AttackFitnessMeasure fitnessMeasure, InputInformation inputInfo, int frameDuration)
+        public KillCountHelper(Unit unit, AttackFitness fitnessMeasure, InputVector inputVector, int frameDuration)
         {
             this.m_unit = unit;
             this.m_fitnessMeasure = fitnessMeasure;
-            this.m_inputInfo = inputInfo;
+            this.m_inputVector = inputVector;
             this.m_frameDuration = frameDuration;
             this.m_tempKillCount = unit.KillCount;
         }
@@ -51,11 +51,11 @@ namespace NeuralNetTraining
         {
             if (currentKillCount > m_tempKillCount)
             {
-                //m_fitnessMeasure.ComputeDataPair(m_inputInfo, true, true);
+                m_fitnessMeasure.ComputeDataPair(m_inputVector, true, true);
             }
             else
             {
-                //m_fitnessMeasure.ComputeDataPair(m_inputInfo, true, false);
+                m_fitnessMeasure.ComputeDataPair(m_inputVector, true, false);
             }
         }
         #endregion

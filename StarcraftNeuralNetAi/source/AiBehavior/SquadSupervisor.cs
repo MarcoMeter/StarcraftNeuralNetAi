@@ -19,7 +19,7 @@ namespace NeuralNetTraining
         private List<EnemyBehavior> m_enemyCombatUnits = new List<EnemyBehavior>();
 
         // InputInfo related objects
-        private InputInformation m_globalInputInfo;
+        private InputVector m_globalInputVector;
         private int m_initialSquadHp = 0;
         private int m_initialEnemySquadHp = 0;
         private int m_initialSquadCount = 0;
@@ -52,11 +52,11 @@ namespace NeuralNetTraining
         /// <summary>
         /// Read-only. The SquadSupervisor provides global input information for the neural net, which is getting updated each frame.
         /// </summary>
-        public InputInformation GlobalInputInfo
+        public InputVector GlobalInputVector
         {
             get
             {
-                return this.m_globalInputInfo;
+                return this.m_globalInputVector;
             }
         }
         #endregion
@@ -224,7 +224,7 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnFrame()
         {
-            m_globalInputInfo = GatherRawInputData();
+            m_globalInputVector = GatherRawInputData();
 
             // trigger on frame on the individual ai units
             foreach (CombatUnitTrainingBehavior friendlyCombatUnits in m_friendlyCombatUnits)
@@ -259,7 +259,7 @@ namespace NeuralNetTraining
         /// This function collects the global input information for the neural net.
         /// </summary>
         /// <returns>An incomplete InputInformation, which only consists of global input information, is returned.</returns>
-        private InputInformation GatherRawInputData()
+        private InputVector GatherRawInputData()
         {
             int enemyHP = 0;
 
@@ -268,10 +268,8 @@ namespace NeuralNetTraining
             {
                 enemyHP += behavior.Unit.HitPoints;
             }
-
-            InputInformation info = new InputInformation(enemyHP, m_initialEnemySquadHp, EnemyCount, m_initialEnemySquadCount, GetSquadHealth(), m_initialSquadHp, FriendlyCount, m_initialSquadCount);
-            
-            return info;
+            InputVector inputVector = new InputVector(GetSquadHealth(), FriendlyCount, enemyHP, EnemyCount, m_initialSquadHp, m_initialSquadCount, m_initialEnemySquadHp, m_initialEnemySquadCount);
+            return inputVector;
         }
         #endregion
     }

@@ -65,10 +65,12 @@
     <Compile Include="source\AiBehavior\KillCountHelper.cs" />
     <Compile Include="source\AiBehavior\SquadSupervisor.cs" />
     <Compile Include="source\Enum\CombatUnitState.cs" />
-    <Compile Include="source\Fitness\EnemyStateRecord.cs" />
-    <Compile Include="source\Fitness\FriendlyStateRecord.cs" />
+    <Compile Include="source\Fitness\AttackFitness.cs" />
+    <Compile Include="source\Fitness\FitnessMeasure.cs" />
     <Compile Include="source\Fitness\AttackFitnessMeasure.cs" />
+    <Compile Include="source\Fitness\MovementFitness.cs" />
     <Compile Include="source\NeuralNet\InputInformation.cs" />
+    <Compile Include="source\NeuralNet\InputVector.cs" />
     <Compile Include="source\NeuralNet\NeuralNetController.cs" />
     <Compile Include="source\TrainingModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

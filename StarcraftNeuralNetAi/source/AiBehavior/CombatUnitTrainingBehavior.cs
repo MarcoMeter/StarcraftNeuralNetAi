@@ -30,16 +30,16 @@ namespace NeuralNetTraining
         private SquadSupervisor m_squadSupervisor;
         private NeuralNetController m_neuralNetController;
         private BasicNetwork m_neuralNet;
-        private AttackFitnessMeasure m_fitnessMeasure;
-        private List<AttackFitnessMeasure> m_fitnessMeasureStack = new List<AttackFitnessMeasure>();
+        private AttackFitness m_attackFitnessMeasure;
+        private MovementFitness m_movementFitnessMeasure;
         private bool m_requestDecision = true;
         private CombatUnitState m_currentState = CombatUnitState.SquadState;
         private bool m_stateTransition = true;
-        private const int m_outputActionsCount = 2;
+        private const int m_outputActionsCount = 3;
 
         // Information gathering
-        private int m_infoRadiusOne;
-        private int m_infoRadiusTwo;
+        private int m_closeRangeRadius;
+        private int m_farRangeRadius;
         private int m_infoRadiusTwoMultiplier = 2;
 
         // Attack action
@@ -49,7 +49,7 @@ namespace NeuralNetTraining
         private KillCountHelper m_killCountHelper;
 
         // Run action
-        private const int m_runDuration = 7;
+        private const int m_runDuration = 8;
         private int m_stateFrameCount = 0;
 
         // Training concerns
@@ -103,8 +103,8 @@ namespace NeuralNetTraining
             this.m_neuralNetController = NeuralNetController.Instance;
             this.m_neuralNet = m_neuralNetController.NeuralNet;
             this.m_trainingMode = TrainingModule.TrainingMode;
-            this.m_infoRadiusOne = unit.UnitType.GroundWeapon.MaxRange;
-            this.m_infoRadiusTwo = unit.UnitType.GroundWeapon.MaxRange * m_infoRadiusTwoMultiplier;
+            this.m_closeRangeRadius = unit.UnitType.GroundWeapon.MaxRange;
+            this.m_farRangeRadius = unit.UnitType.GroundWeapon.MaxRange * m_infoRadiusTwoMultiplier;
         }
         #endregion
 
@@ -113,11 +113,57 @@ namespace NeuralNetTraining
         /// Request the most recent global input information and complete it with local data
         /// </summary>
         /// <returns>After completing the data, the data gets returned</returns>
-        public InputInformation GenerateInputInfo()
+        public InputVector GenerateInputVector()
         {
-            InputInformation info = m_squadSupervisor.GlobalInputInfo;
-            info.CompleteInputData(m_unit.HitPoints, m_initialHitPoints, m_unit.Distance(m_squadSupervisor.GetClosestEnemyUnit(this)));
-            return info;
+            InputVector input = m_squadSupervisor.GlobalInputVector; // Get global input information retrieved from the SquadSupervisor.
+
+            // Gather information about units within the specified radii
+            HashSet<Unit> closeRangeUnits = m_unit.UnitsInRadius(m_closeRangeRadius); // Find all units in close range
+            HashSet<Unit> farRangeUnits = m_unit.UnitsInRadius(m_farRangeRadius); // Find all units in far range
+            int closeRangeFriendlyHitPoints = 0;
+            int closeRangeFriendlyCount = 0;
+            int closeRangeEnemyHitPoints = 0;
+            int closeRangeEnemyCount = 0;
+            int farRangeFriendlyHitPoints = 0;
+            int farRangeFriendlyCount = 0;
+            int farRangeEnemyHitPoints = 0;
+            int farRangeEnemyCount = 0;
+            double closestEnemyDistance = m_unit.Distance(m_squadSupervisor.GetClosestEnemyUnit(this));
+
+            // Close range units
+            foreach(Unit u in closeRangeUnits)
+            {
+                if(u.Player.Id == Game.Self.Id) // friendly units
+                {
+                    closeRangeFriendlyHitPoints += u.HitPoints;
+                    closeRangeFriendlyCount++;
+                }
+                else                 // enemy units
+                {
+                    closeRangeEnemyHitPoints += u.HitPoints;
+                    closeRangeEnemyCount++;
+                }
+            }
+
+            // Far range units
+            foreach(Unit u in farRangeUnits)
+            {
+                if (u.Player.Id == Game.Self.Id) // friendly units
+                {
+                    farRangeFriendlyHitPoints += u.HitPoints;
+                    farRangeFriendlyCount++;
+                }
+                else                 // enemy units
+                {
+                    farRangeEnemyHitPoints += u.HitPoints;
+                    farRangeEnemyCount++;
+                }
+            }
+
+            // Complete input vector
+            input.CompleteInputData(m_unit.HitPoints, m_initialHitPoints, closeRangeFriendlyHitPoints, closeRangeFriendlyCount, closeRangeEnemyHitPoints, closeRangeEnemyCount,
+                                    farRangeFriendlyHitPoints, farRangeFriendlyCount, farRangeEnemyHitPoints, farRangeEnemyCount, closestEnemyDistance);
+            return input;
         }
         #endregion
 
@@ -145,9 +191,9 @@ namespace NeuralNetTraining
                 {
                     SquadState();
                 }
-                else if (m_currentState == CombatUnitState.RunAway)
+                else if (m_currentState == CombatUnitState.MoveBack)
                 {
-                    RunAway();
+                    MoveBack();
                 }
                 else
                 {
@@ -166,15 +212,16 @@ namespace NeuralNetTraining
         /// </summary>
         private void MakeDecision()
         {
-            InputInformation inputInfo = GenerateInputInfo();   // request input information
-            double[] inputData = inputInfo.GetNormalizedData(); // normalize data
+            InputVector inputVector = GenerateInputVector();   // request input information
+            double[] inputData = inputVector.GetNormalizedData(); // normalize data
             CombatUnitState newState = (CombatUnitState)GeneralUtil.RandomNumberGenerator.Next(m_outputActionsCount);      // determine random action
 
             if (m_trainingMode)
             {
                 IMLData outData = m_neuralNet.Compute(new BasicMLData(inputData));            // compute output of the neural net
                 // initialize AttackFitnessMeasure with the current inputs, the random state and the computed network output
-                m_fitnessMeasure = new AttackFitnessMeasure(inputInfo, newState, outData);
+                m_attackFitnessMeasure = new AttackFitness(inputVector, newState, outData);
+                m_movementFitnessMeasure = new MovementFitness(inputVector, newState, outData);
             }
             else
             {
@@ -232,17 +279,16 @@ namespace NeuralNetTraining
             {
                 if (m_trainingMode)
                 {
-                    m_fitnessMeasureStack.Add(m_fitnessMeasure);
                     if(m_unit.KillCount > m_killCount)
                     {
                         // if the kill count got increased during the attack, feedback is already existing in order to evaluate the action.
                         m_killCount = m_unit.KillCount;
-                        //m_fitnessMeasure.ComputeDataPair(GenerateInputInfo(), true, true);
+                        m_attackFitnessMeasure.ComputeDataPair(GenerateInputVector(), true, true);
                     }
                     else
                     {
                         // This case determines if a kill occured shortly after the taken action. If no kill occured, the fitness measure will assume a succesful hit but no kill as feedback.
-                        m_killCountHelper = new KillCountHelper(m_unit, m_fitnessMeasure, GenerateInputInfo(), m_waitForKillCountDuration);
+                        m_killCountHelper = new KillCountHelper(m_unit, m_attackFitnessMeasure, GenerateInputVector(), m_waitForKillCountDuration);
                     }
 
                 }
@@ -255,18 +301,18 @@ namespace NeuralNetTraining
         /// <summary>
         /// Running away is like retreating from combat. During a constant amount of frames, the unit tries to increase the distance to its closest enemy.
         /// </summary>
-        private void RunAway()
+        private void MoveBack()
         {
             Unit closestFoe = m_squadSupervisor.GetClosestEnemyUnit(this);
 
-            if(m_stateFrameCount < m_runDuration)
+            if (m_stateFrameCount < m_runDuration)
             {
                 SmartMove((m_unit.Position - closestFoe.Position) * 2 + m_unit.Position);
                 m_stateFrameCount++;
             }
             else
             {
-                // TODO compute data pair logic
+                m_movementFitnessMeasure.ComputeDataPair(GenerateInputVector(), false, false);
                 m_requestDecision = true;
                 m_stateFrameCount = 0;
             }
@@ -367,8 +413,8 @@ namespace NeuralNetTraining
 
             if (IsAlive)
             {
-                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y, m_infoRadiusOne, Color.White, false); // draw info gathering circle #1
-                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y, m_infoRadiusTwo, Color.White, false); // draw info gathering circle #2
+                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y, m_closeRangeRadius, Color.White, false); // draw info gathering circle #1
+                Game.DrawCircleMap(m_unit.Position.X, m_unit.Position.Y, m_farRangeRadius, Color.White, false); // draw info gathering circle #2
             }
         }
         #endregion
