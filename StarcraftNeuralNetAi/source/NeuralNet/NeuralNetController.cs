@@ -107,6 +107,7 @@ namespace NeuralNetTraining
                 m_trainer = new Backpropagation(m_neuralNet, m_dataSet, m_learningRate, m_momentum);
                 m_trainer.Iteration(); // iterating just once over the gathered data is required. That's because of the training examples will improve over time. The early produced examples aren't as ideal as the later ones.
                 m_trainer.FinishTraining();
+                PersistenceUtil.WriteLine("Training Examples count : " + m_dataSet.Count);
                 m_dataSet = new BasicMLDataSet();
                 PersistenceUtil.WriteLine("ERROR Rate : " + m_trainer.Error);
                 PersistenceUtil.SaveNeuralNet(m_neuralNet);

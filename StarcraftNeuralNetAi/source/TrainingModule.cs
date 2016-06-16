@@ -145,9 +145,11 @@ namespace NeuralNetTraining
         /// </summary>
         private void InitializeSquad()
         {
+            int idToAssign = 0;
             foreach(Unit unit in Game.Self.Units)
             {
-                m_squadSupervisor.AddFriendlyCombatUnit(new CombatUnitTrainingBehavior(unit, m_squadSupervisor));
+                m_squadSupervisor.AddFriendlyCombatUnit(new CombatUnitTrainingBehavior(unit, m_squadSupervisor, idToAssign));
+                idToAssign++;
             }
         }
 

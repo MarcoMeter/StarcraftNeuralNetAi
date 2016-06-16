@@ -1,4 +1,5 @@
 ﻿using NeuralNetTraining.Utility;
+using BroodWar.Api;
 
 namespace NeuralNetTraining
 {
@@ -35,6 +36,8 @@ namespace NeuralNetTraining
         private const double m_distanceOperator = 1000;
 
         private bool m_isCompleted = false; // the SquadSUpervisor initializes this object, the missing information is contributed by the individual unit
+        private int m_frameOfCompletion;
+        private int m_unitId;
         #endregion
 
         #region Member Properties
@@ -46,6 +49,28 @@ namespace NeuralNetTraining
             get
             {
                 return this.m_isCompleted;
+            }
+        }
+
+        /// <summary>
+        /// Read-only time stamp.
+        /// </summary>
+        public int FrameOfCompletion
+        {
+            get
+            {
+                return this.m_frameOfCompletion;
+            }
+        }
+
+        /// <summary>
+        /// Read-only id of the unit which is related to this input vector.
+        /// </summary>
+        public int UnitId
+        {
+            get
+            {
+                return this.m_unitId;
             }
         }
 
@@ -175,17 +200,16 @@ namespace NeuralNetTraining
         /// <param name="initialFriendlyCount">overall and initial</param>
         /// <param name="initialEnemyHitPoints">overall and initial</param>
         /// <param name="initialEnemyCount">overall and initial</param>
-        public InputVector(int friendlyHitPoints, int friendlyCount, int enemyHitPoints, int enemyCount,
-                           int initialFriendlyHitPoints, int initialFriendlyCount, int initialEnemyHitPoints, int initialEnemyCount)
+        public InputVector(GlobalInputInfo globalInputInfo)
         {
-            this.m_overAllFriendlyHitPoints = friendlyHitPoints;
-            this.m_overAllFriendlyCount = friendlyCount;
-            this.m_overAllEnemyHitPoints = enemyHitPoints;
-            this.m_overAllEnemyCount = enemyCount;
-            this.m_overAllInitialFriendlyHitPoints = initialFriendlyHitPoints;
-            this.m_overAllInitialFriendlyCount = initialFriendlyCount;
-            this.m_overAllInitialEnemyHitPoints = initialEnemyHitPoints;
-            this.m_overAllInitialEnemyCount = initialEnemyCount;
+            this.m_overAllFriendlyHitPoints = globalInputInfo.overAllFriendlyHitPoints;
+            this.m_overAllFriendlyCount = globalInputInfo.overAllFriendlyCount;
+            this.m_overAllEnemyHitPoints = globalInputInfo.overAllEnemyHitPoints;
+            this.m_overAllEnemyCount = globalInputInfo.overAllEnemyCount;
+            this.m_overAllInitialFriendlyHitPoints = globalInputInfo.overAllInitialFriendlyHitPoints;
+            this.m_overAllInitialFriendlyCount = globalInputInfo.overAllInitialFriendlyCount;
+            this.m_overAllInitialEnemyHitPoints = globalInputInfo.overAllInitialEnemyHitPoints;
+            this.m_overAllInitialEnemyCount = globalInputInfo.overAllInitialEnemyCount;
         }
         #endregion
 
@@ -218,6 +242,7 @@ namespace NeuralNetTraining
             this.m_farRangeEnemyCount = frEnemyCount;
             this.m_closestEnemyDistance = closestEnemyDistance;
             this.m_isCompleted = true;
+            this.m_frameOfCompletion = Game.FrameCount;
         }
 
         /// <summary>

@@ -22,6 +22,7 @@ namespace NeuralNetTraining
         #region Member Fields
         // Unit related props
         private Unit m_unit;
+        private int m_id;
         private int m_initialHitPoints;
         private bool m_isAlive = true;
         private int m_killCount = 0;
@@ -73,6 +74,17 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
+        /// Read-only id of the unit.
+        /// </summary>
+        public int Id
+        {
+            get
+            {
+                return this.m_id;
+            }
+        }
+
+        /// <summary>
         /// Sets and gets the alive state of the unit.
         /// </summary>
         public bool IsAlive
@@ -95,9 +107,10 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="unit">The individual combat unit which needs to be paired with this behavior.</param>
         /// <param name="supervisor">The SquadSupervisor which controlls the combat unit.</param>
-        public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor)
+        public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor, int id)
         {
             this.m_unit = unit;
+            this.m_id = id;
             this.m_initialHitPoints = unit.HitPoints;
             this.m_squadSupervisor = supervisor;
             this.m_neuralNetController = NeuralNetController.Instance;

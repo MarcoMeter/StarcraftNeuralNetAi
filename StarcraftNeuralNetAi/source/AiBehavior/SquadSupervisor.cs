@@ -19,7 +19,7 @@ namespace NeuralNetTraining
         private List<EnemyBehavior> m_enemyCombatUnits = new List<EnemyBehavior>();
 
         // InputInfo related objects
-        private InputVector m_globalInputVector;
+        private GlobalInputInfo m_globalInputInfo;
         private int m_initialSquadHp = 0;
         private int m_initialEnemySquadHp = 0;
         private int m_initialSquadCount = 0;
@@ -56,7 +56,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return this.m_globalInputVector;
+                return new InputVector(m_globalInputInfo);
             }
         }
         #endregion
@@ -224,7 +224,7 @@ namespace NeuralNetTraining
         /// </summary>
         public void OnFrame()
         {
-            m_globalInputVector = GatherRawInputData();
+            GatherRawInputData();
 
             // trigger on frame on the individual ai units
             foreach (CombatUnitTrainingBehavior friendlyCombatUnits in m_friendlyCombatUnits)
@@ -259,7 +259,7 @@ namespace NeuralNetTraining
         /// This function collects the global input information for the neural net.
         /// </summary>
         /// <returns>An incomplete InputInformation, which only consists of global input information, is returned.</returns>
-        private InputVector GatherRawInputData()
+        private void GatherRawInputData()
         {
             int enemyHP = 0;
 
@@ -268,8 +268,15 @@ namespace NeuralNetTraining
             {
                 enemyHP += behavior.Unit.HitPoints;
             }
-            InputVector inputVector = new InputVector(GetSquadHealth(), FriendlyCount, enemyHP, EnemyCount, m_initialSquadHp, m_initialSquadCount, m_initialEnemySquadHp, m_initialEnemySquadCount);
-            return inputVector;
+            
+            m_globalInputInfo.overAllFriendlyHitPoints = GetSquadHealth();
+            m_globalInputInfo.overAllFriendlyCount = FriendlyCount;
+            m_globalInputInfo.overAllEnemyHitPoints = enemyHP;
+            m_globalInputInfo.overAllFriendlyCount = EnemyCount;
+            m_globalInputInfo.overAllInitialFriendlyHitPoints = m_initialSquadHp;
+            m_globalInputInfo.overAllInitialFriendlyCount = m_initialSquadCount;
+            m_globalInputInfo.overAllInitialEnemyHitPoints = m_initialEnemySquadHp;
+            m_globalInputInfo.overAllInitialEnemyCount = m_initialEnemySquadCount;
         }
         #endregion
     }
