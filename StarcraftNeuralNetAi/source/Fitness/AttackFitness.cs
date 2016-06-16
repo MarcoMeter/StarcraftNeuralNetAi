@@ -86,13 +86,21 @@ namespace NeuralNetTraining
             BasicMLDataPair pair = new BasicMLDataPair(new BasicMLData(m_initialInputVector.GetNormalizedData()), new BasicMLData(output));
             m_neuralNetController.AddTrainingDataPair(pair);
 
-            PersistenceUtil.WriteLine("<<< START ATTACK FITNESS >>>");
-            PersistenceUtil.WriteLine("action: " + m_randomOutput.ToString());
-            PersistenceUtil.WriteLine("desired attack adjustment: " + desiredOutputActionAdjustment);
+
+            double[] d = m_initialInputVector.GetNormalizedData();
+            double[] f = finalInputVector.GetNormalizedData();
+            PersistenceUtil.WriteLine("<<< START " + m_randomOutput.ToString() + " FITNESS >>>");
+            PersistenceUtil.WriteLine("unit situation ratio: " + finalInputVector.UnitHitPoints + " / " + m_initialInputVector.UnitHitPoints + " = " + unitSituationRatio.ToString());
+            PersistenceUtil.WriteLine("desired attack adjustment: 1 + (" + unitSituationRatio + " - " + enemySituationRatio + ") = " + desiredOutputActionAdjustment);
             PersistenceUtil.WriteLine("desired movement adjustment: " + desiredMovementAdjustment);
             PersistenceUtil.WriteLine("desired output: " + pair.Ideal.ToString());
-            PersistenceUtil.WriteLine("Initial: " + String.Join(",", m_initialInputVector.GetNormalizedData().Select(p => p.ToString()).ToArray()));
-            PersistenceUtil.WriteLine("Final: " + String.Join(",", finalInputVector.GetNormalizedData().Select(p => p.ToString()).ToArray()));
+            PersistenceUtil.WriteLine("         " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|",
+                "HP", "oaFHP", "oaFC", "oaEHP", "oaEC", "crFHP", "crFC", "crEHP", "crEC", "frFHP", "frFC", "frEHP", "frEC", "dist"));
+            PersistenceUtil.WriteLine("Initial: " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|",
+                d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10], d[11], d[12], d[13]));
+            PersistenceUtil.WriteLine("Final  : " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|",
+                f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13]));
+            PersistenceUtil.WriteLine(" ");
         }
         #endregion
 
