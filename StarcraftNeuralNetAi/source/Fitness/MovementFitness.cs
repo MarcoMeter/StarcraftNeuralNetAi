@@ -35,7 +35,70 @@ namespace NeuralNetTraining
         /// <param name="killed">In the case of movement enter false</param>
         public override void ComputeDataPair(InputVector finalInputVector, bool hit, bool killed)
         {
+            PersistenceUtil.WriteLine("<<< START MOVEMENT FITNESS >>>");
+            PersistenceUtil.WriteLine("Close range");
+            PersistenceUtil.WriteLine("Friendly hit points : " + m_initialInputVector.CloseRangeFriendlyHitPoints + " Friendly Count : " + m_initialInputVector.CloseRangeFriendlyCount + " Enemy hit points : " + m_initialInputVector.CloseRangeEnemyHitPoints + " Enemy count : " + m_initialInputVector.CloseRangeEnemyCount);
+            PersistenceUtil.WriteLine("Friendly hit points : " + finalInputVector.CloseRangeFriendlyHitPoints + " Friendly Count : " + finalInputVector.CloseRangeFriendlyCount + " Enemy hit points : " + finalInputVector.CloseRangeEnemyHitPoints + " Enemy count : " + finalInputVector.CloseRangeEnemyCount);
+            PersistenceUtil.WriteLine("Far range");
+            PersistenceUtil.WriteLine("Friendly hit points : " + m_initialInputVector.FarRangeFriendlyHitPoints + " Friendly Count : " + m_initialInputVector.FarRangeFriendlyCount + " Enemy hit points : " + m_initialInputVector.FarRangeEnemyHitPoints + " Enemy count : " + m_initialInputVector.FarRangeEnemyCount);
+            PersistenceUtil.WriteLine("Friendly hit points : " + finalInputVector.FarRangeFriendlyHitPoints + " Friendly Count : " + finalInputVector.FarRangeFriendlyCount + " Enemy hit points : " + finalInputVector.FarRangeEnemyHitPoints + " Enemy count : " + finalInputVector.FarRangeEnemyCount);
+            PersistenceUtil.WriteLine("distance before : " + m_initialInputVector.ClosestEnemyDistance);
+            PersistenceUtil.WriteLine("distance after : " + finalInputVector.ClosestEnemyDistance);
+            PersistenceUtil.WriteLine("hit points before : " + m_initialInputVector.UnitHitPoints);
+            PersistenceUtil.WriteLine("hit points after : " + finalInputVector.UnitHitPoints);
             
+
+            // Step #1: Compare situations
+            double friendlyCloseRatio = ((m_initialInputVector.CloseRangeFriendlyHitPoints / finalInputVector.CloseRangeFriendlyHitPoints) + (m_initialInputVector.CloseRangeFriendlyCount / finalInputVector.CloseRangeFriendlyCount)) / 2;
+            double enemyCloseRatio = ((m_initialInputVector.CloseRangeEnemyHitPoints / finalInputVector.CloseRangeEnemyHitPoints) + (m_initialInputVector.CloseRangeEnemyCount / finalInputVector.CloseRangeEnemyCount)) / 2;
+            double friendlyFarRatio = ((m_initialInputVector.FarRangeFriendlyHitPoints / finalInputVector.FarRangeFriendlyHitPoints) + (m_initialInputVector.FarRangeFriendlyCount / finalInputVector.FarRangeFriendlyCount)) / 2;
+            double enemyFarRatio = ((m_initialInputVector.FarRangeEnemyHitPoints / finalInputVector.FarRangeEnemyHitPoints) + (m_initialInputVector.FarRangeEnemyCount / finalInputVector.FarRangeEnemyCount)) / 2;
+            double distanceRatio = m_initialInputVector.ClosestEnemyDistance / finalInputVector.UnitHitPoints;
+
+            double closeSituation = friendlyCloseRatio - enemyCloseRatio;
+
+            PersistenceUtil.WriteLine("frienflyCloseRatio: " + friendlyCloseRatio);
+            PersistenceUtil.WriteLine("enemyCloseRatio: " + enemyCloseRatio);
+            PersistenceUtil.WriteLine("friendlyFarRatio: " + friendlyFarRatio);
+            PersistenceUtil.WriteLine("enemyFarRatio: " + enemyFarRatio);
+            PersistenceUtil.WriteLine("distanceRatio: " + distanceRatio);
+            PersistenceUtil.WriteLine("closeSituation: " + closeSituation);
+
+            if(m_initialInputVector.CloseRangeFriendlyHitPoints < finalInputVector.CloseRangeFriendlyHitPoints)
+            {
+                // situation improved
+            }
+            else
+            {
+
+            }
+
+            if (m_initialInputVector.CloseRangeFriendlyCount < finalInputVector.CloseRangeFriendlyCount)
+            {
+                // situation improved
+            }
+            else
+            {
+
+            }
+
+            if (m_initialInputVector.CloseRangeEnemyHitPoints > finalInputVector.CloseRangeEnemyHitPoints)
+            {
+                // situation improved
+            }
+            else
+            {
+
+            }
+
+            if(m_initialInputVector.CloseRangeEnemyCount > finalInputVector.CloseRangeFriendlyCount)
+            {
+                // situation improved
+            }
+            else
+            {
+
+            }
         }
         #endregion
 

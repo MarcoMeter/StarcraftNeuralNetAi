@@ -35,7 +35,7 @@ namespace NeuralNetTraining
         private bool m_requestDecision = true;
         private CombatUnitState m_currentState = CombatUnitState.SquadState;
         private bool m_stateTransition = true;
-        private const int m_outputActionsCount = 3;
+        private const int m_outputActionsCount = 2;
 
         // Information gathering
         private int m_closeRangeRadius;
@@ -49,7 +49,7 @@ namespace NeuralNetTraining
         private KillCountHelper m_killCountHelper;
 
         // Run action
-        private const int m_runDuration = 8;
+        private const int m_runDuration = 10;
         private int m_stateFrameCount = 0;
 
         // Training concerns
@@ -225,7 +225,7 @@ namespace NeuralNetTraining
             }
             else
             {
-                //PersistenceUtil.WriteLine(m_neuralNet.Compute(new BasicMLData(inputData)).ToString());
+                PersistenceUtil.WriteLine(m_neuralNet.Compute(new BasicMLData(inputData)).ToString());
                 newState = (CombatUnitState)m_neuralNet.Classify(new BasicMLData(inputData)); // override random decision and let the net make the decision
             }
 
@@ -312,7 +312,10 @@ namespace NeuralNetTraining
             }
             else
             {
-                m_movementFitnessMeasure.ComputeDataPair(GenerateInputVector(), false, false);
+                if (m_trainingMode)
+                {
+                    m_movementFitnessMeasure.ComputeDataPair(GenerateInputVector(), false, false);
+                }
                 m_requestDecision = true;
                 m_stateFrameCount = 0;
             }
