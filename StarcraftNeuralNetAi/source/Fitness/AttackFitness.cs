@@ -13,6 +13,7 @@ namespace NeuralNetTraining
         #region Member
         private const double m_hitWeight = 0.85;
         private const double m_killWeight = 0.65;
+        private const double m_movementWeight = 1.2;
         #endregion
 
         #region Constructor
@@ -59,7 +60,7 @@ namespace NeuralNetTraining
 
             if(unitSituationRatio <= 0.5) // The closer the units gets to death, then more likely using the MoveBack action should get increased.
             {
-                desiredMovementAdjustment = 1.5;
+                desiredMovementAdjustment = m_movementWeight;
             }
 
             // Step #3: Build the new desired output vector
@@ -70,11 +71,11 @@ namespace NeuralNetTraining
             {
                 if(i == (int)m_randomOutput)
                 {
-                    output[i] = m_computedOutput[i] * desiredOutputActionAdjustment;
+                    output[i] = ClampOutput(m_computedOutput[i] * desiredOutputActionAdjustment);
                 }
                 else if(i == (int)CombatUnitState.MoveBack)
                 {
-                    output[i] = m_computedOutput[i] * desiredMovementAdjustment;
+                    output[i] = ClampOutput(m_computedOutput[i] * desiredMovementAdjustment);
                 }
                 else
                 {
@@ -105,6 +106,26 @@ namespace NeuralNetTraining
         #endregion
 
         #region Local Functions
+        /// <summary>
+        /// Clamps the value to be in the range 1 and 0.1
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private double ClampOutput(double value)
+        {
+            if(value > 1)
+            {
+                return 1;
+            }
+            else if(value < 0.01)
+            {
+                return 0.01;
+            }
+            else
+            {
+                return value;
+            }
+        }
         #endregion
     }
 }

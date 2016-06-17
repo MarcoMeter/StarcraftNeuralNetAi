@@ -31,6 +31,7 @@ namespace NeuralNetTraining
         private Backpropagation m_trainer;
         private double m_learningRate = 0.1;
         private double m_momentum = 0.1;
+        private double m_iterationMultiplier = 3;
         #endregion
 
         #region Member Properties
@@ -76,7 +77,7 @@ namespace NeuralNetTraining
             {
                 this.m_neuralNet = new BasicNetwork();
                 this.m_neuralNet.AddLayer(new BasicLayer(null, true, 14)); // input layer
-                this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 36)); // #1 hidden layer
+                this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 40)); // #1 hidden layer
                 this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 3)); // output layer
                 this.m_neuralNet.Structure.FinalizeStructure();
                 this.m_neuralNet.Reset(); // initializes the weights of the neural net
@@ -104,8 +105,11 @@ namespace NeuralNetTraining
         {
             if (m_dataSet.Count > 0)
             {
-                m_trainer = new Backpropagation(m_neuralNet, m_dataSet, m_learningRate, m_momentum);
-                m_trainer.Iteration(); // iterating just once over the gathered data is required. That's because of the training examples will improve over time. The early produced examples aren't as ideal as the later ones.
+                m_trainer = new Backpropagation(m_neuralNet, m_dataSet);
+                for (int i = 0; i <= TrainingModule.MatchNumber * m_iterationMultiplier; i++)
+                {
+                    m_trainer.Iteration(); // iterating just once over the gathered data is required. That's because of the training examples will improve over time. The early produced examples aren't as ideal as the later ones.
+                }
                 m_trainer.FinishTraining();
                 PersistenceUtil.WriteLine("Training Examples count : " + m_dataSet.Count);
                 m_dataSet = new BasicMLDataSet();
