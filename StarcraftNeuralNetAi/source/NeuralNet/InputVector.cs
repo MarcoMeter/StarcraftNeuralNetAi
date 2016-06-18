@@ -39,7 +39,6 @@ namespace NeuralNetTraining
 
         private bool m_isCompleted = false; // the SquadSUpervisor initializes this object, the missing information is contributed by the individual unit
         private int m_frameOfCompletion;
-        private int m_unitId;
         #endregion
 
         #region Member Properties
@@ -62,17 +61,6 @@ namespace NeuralNetTraining
             get
             {
                 return this.m_frameOfCompletion;
-            }
-        }
-
-        /// <summary>
-        /// Read-only id of the unit which is related to this input vector.
-        /// </summary>
-        public int UnitId
-        {
-            get
-            {
-                return this.m_unitId;
             }
         }
 
