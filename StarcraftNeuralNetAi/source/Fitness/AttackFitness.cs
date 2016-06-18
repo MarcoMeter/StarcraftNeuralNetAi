@@ -12,8 +12,9 @@ namespace NeuralNetTraining
     {
         #region Member
         private const double m_hitWeight = 0.85;
-        private const double m_killWeight = 0.65;
-        private const double m_movementWeight = 1.2;
+        private const double m_killWeight = 0.5;
+        private const double m_complimentMovementWeight = 1.3;
+        private const double m_blameMovementWeight = 0.7;
         #endregion
 
         #region Constructor
@@ -60,7 +61,11 @@ namespace NeuralNetTraining
 
             if(unitSituationRatio <= 0.5) // The closer the units gets to death, then more likely using the MoveBack action should get increased.
             {
-                desiredMovementAdjustment = m_movementWeight;
+                desiredMovementAdjustment = m_complimentMovementWeight;
+            }
+            else if(unitSituationRatio >= 1.15)
+            {
+                desiredMovementAdjustment = m_blameMovementWeight;
             }
 
             // Step #3: Build the new desired output vector
@@ -95,12 +100,12 @@ namespace NeuralNetTraining
             PersistenceUtil.WriteLine("desired attack adjustment: 1 + (" + unitSituationRatio + " - " + enemySituationRatio + ") = " + desiredOutputActionAdjustment);
             PersistenceUtil.WriteLine("desired movement adjustment: " + desiredMovementAdjustment);
             PersistenceUtil.WriteLine("desired output: " + pair.Ideal.ToString());
-            PersistenceUtil.WriteLine("         " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|",
-                "HP", "oaFHP", "oaFC", "oaEHP", "oaEC", "crFHP", "crFC", "crEHP", "crEC", "frFHP", "frFC", "frEHP", "frEC", "dist"));
-            PersistenceUtil.WriteLine("Initial: " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|",
-                d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10], d[11], d[12], d[13]));
-            PersistenceUtil.WriteLine("Final  : " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|",
-                f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13]));
+            PersistenceUtil.WriteLine("         " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|{14,5}|{15,5}|",
+                                                                    "HP", "oaFHP", "oaFC", "oaEHP", "oaEC", "crFHP", "crFC", "crEHP", "crEC", "frFHP", "frFC", "frEHP", "frEC", "dist", "wHP", "wDist"));
+            PersistenceUtil.WriteLine("Initial: " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|{14,5}|{15,5}|",
+                                                                    d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10], d[11], d[12], d[13], d[14], d[15]));
+            PersistenceUtil.WriteLine("Final  : " + String.Format("|{0,5}|{1,5}|{2,5}|{3,5}|{4,5}|{5,5}|{6,5}|{7,5}|{8,5}|{9,5}|{10,5}|{11,5}|{12,5}|{13,5}|{14,5}|{15,5}|",
+                                                                    f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10], f[11], f[12], f[13], d[14], d[15]));
             PersistenceUtil.WriteLine(" ");
         }
         #endregion
