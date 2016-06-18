@@ -277,6 +277,7 @@ namespace NeuralNetTraining
             m_globalInputInfo.overAllInitialFriendlyCount = m_initialSquadCount;
             m_globalInputInfo.overAllInitialEnemyHitPoints = m_initialEnemySquadHp;
             m_globalInputInfo.overAllInitialEnemyCount = m_initialEnemySquadCount;
+            m_globalInputInfo.weakestEnemyHitPoints = GetWeakestEnemyUnit().HitPoints;
         }
         #endregion
     }

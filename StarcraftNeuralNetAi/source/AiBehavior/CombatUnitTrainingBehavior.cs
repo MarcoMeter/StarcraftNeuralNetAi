@@ -175,7 +175,7 @@ namespace NeuralNetTraining
 
             // Complete input vector
             input.CompleteInputData(m_unit.HitPoints, m_initialHitPoints, closeRangeFriendlyHitPoints, closeRangeFriendlyCount, closeRangeEnemyHitPoints, closeRangeEnemyCount,
-                                    farRangeFriendlyHitPoints, farRangeFriendlyCount, farRangeEnemyHitPoints, farRangeEnemyCount, closestEnemyDistance);
+                                    farRangeFriendlyHitPoints, farRangeFriendlyCount, farRangeEnemyHitPoints, farRangeEnemyCount, closestEnemyDistance, m_squadSupervisor.GetWeakestEnemyUnit().Distance(m_unit));
             return input;
         }
         #endregion

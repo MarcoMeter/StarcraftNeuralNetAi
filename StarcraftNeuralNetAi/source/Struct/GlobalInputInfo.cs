@@ -15,5 +15,6 @@ namespace NeuralNetTraining
         public double overAllInitialFriendlyCount;
         public double overAllInitialEnemyHitPoints;
         public double overAllInitialEnemyCount;
+        public double weakestEnemyHitPoints;
     }
 }

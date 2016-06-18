@@ -31,7 +31,7 @@ namespace NeuralNetTraining
         private Backpropagation m_trainer;
         private double m_learningRate = 0.1;
         private double m_momentum = 0.1;
-        private double m_iterationMultiplier = 3;
+        private double m_iterationMultiplier = 2;
         #endregion
 
         #region Member Properties
@@ -76,7 +76,7 @@ namespace NeuralNetTraining
             if(this.m_neuralNet == null)
             {
                 this.m_neuralNet = new BasicNetwork();
-                this.m_neuralNet.AddLayer(new BasicLayer(null, true, 14)); // input layer
+                this.m_neuralNet.AddLayer(new BasicLayer(null, true, 16)); // input layer
                 this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 40)); // #1 hidden layer
                 this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 3)); // output layer
                 this.m_neuralNet.Structure.FinalizeStructure();

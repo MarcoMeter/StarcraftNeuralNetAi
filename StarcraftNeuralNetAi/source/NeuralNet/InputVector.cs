@@ -14,6 +14,7 @@ namespace NeuralNetTraining
         private double m_overAllFriendlyCount;
         private double m_overAllEnemyHitPoints;
         private double m_overAllEnemyCount;
+        private double m_weakestEnemyHitPoints;
 
         // Individual unit informaiton
         private double m_unitHitPoints;
@@ -26,6 +27,7 @@ namespace NeuralNetTraining
         private double m_farRangeEnemyHitPoints;
         private double m_farRangeEnemyCount;
         private double m_closestEnemyDistance;
+        private double m_weakestEnemyDistance;
 
         // Information used for normalization (overall is known by SquadSupervisor)
         private double m_overAllInitialFriendlyHitPoints;
@@ -78,7 +80,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_overAllFriendlyHitPoints;
+                return m_overAllFriendlyHitPoints / m_overAllInitialFriendlyHitPoints;
             }
         }
 
@@ -86,7 +88,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_overAllFriendlyCount;
+                return m_overAllFriendlyCount / m_overAllInitialFriendlyCount;
             }
         }
 
@@ -94,7 +96,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_overAllEnemyHitPoints;
+                return m_overAllEnemyHitPoints / m_overAllInitialEnemyHitPoints;
             }
         }
 
@@ -102,7 +104,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_overAllEnemyCount;
+                return m_overAllEnemyCount / m_overAllInitialEnemyCount;
             }
         }
 
@@ -110,7 +112,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_closeRangeFriendlyHitPoints;
+                return m_closeRangeFriendlyHitPoints / m_overAllInitialFriendlyHitPoints;
             }
         }
 
@@ -118,7 +120,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_closeRangeFriendlyCount;
+                return m_closeRangeFriendlyCount / m_overAllInitialFriendlyCount;
             }
         }
 
@@ -126,7 +128,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_closeRangeEnemyHitPoints;
+                return m_closeRangeEnemyHitPoints / m_overAllInitialEnemyHitPoints;
             }
         }
 
@@ -135,7 +137,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_closeRangeEnemyCount;
+                return m_closeRangeEnemyCount / m_overAllInitialEnemyCount;
             }
         }
 
@@ -143,7 +145,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_farRangeFriendlyHitPoints;
+                return m_farRangeFriendlyHitPoints / m_overAllInitialFriendlyHitPoints;
             }
         }
 
@@ -151,7 +153,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_farRangeFriendlyCount;
+                return m_farRangeFriendlyCount / m_overAllInitialFriendlyCount;
             }
         }
 
@@ -159,7 +161,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_farRangeEnemyHitPoints;
+                return m_farRangeEnemyHitPoints / m_overAllInitialEnemyHitPoints;
             }
         }
 
@@ -167,7 +169,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_farRangeEnemyCount;
+                return m_farRangeEnemyCount / m_overAllInitialEnemyCount;
             }
         }
 
@@ -175,7 +177,7 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_unitHitPoints;
+                return m_unitHitPoints / m_unitInitialHitPoints;
             }
         }
 
@@ -183,7 +185,23 @@ namespace NeuralNetTraining
         {
             get
             {
-                return m_closestEnemyDistance;
+                return m_closestEnemyDistance / m_distanceOperator;
+            }
+        }
+
+        public double WeakestEnemyHitPoints
+        {
+            get
+            {
+                return m_weakestEnemyHitPoints / m_unitInitialHitPoints;
+            }
+        }
+
+        public double WeakestEnemyDistance
+        {
+            get
+            {
+                return m_weakestEnemyDistance / m_distanceOperator;
             }
         }
         #endregion
@@ -210,6 +228,7 @@ namespace NeuralNetTraining
             this.m_overAllInitialFriendlyCount = globalInputInfo.overAllInitialFriendlyCount;
             this.m_overAllInitialEnemyHitPoints = globalInputInfo.overAllInitialEnemyHitPoints;
             this.m_overAllInitialEnemyCount = globalInputInfo.overAllInitialEnemyCount;
+            this.m_weakestEnemyHitPoints = globalInputInfo.weakestEnemyHitPoints;
         }
         #endregion
 
@@ -228,7 +247,7 @@ namespace NeuralNetTraining
         /// <param name="frEnemyCount">number of all enemy units in far range</param>
         /// <param name="closestEnemyDistance"></param>
         public void CompleteInputData(int hitPoints, int initialHitPoints, int crFriendlyHitPoints, int crFriendlyCount, int crEnemyHitPoints, int crEnemyCount,
-                                      int frFriendlyHitPoints, int frFriendlyCount, int frEnemyHitPoints, int frEnemyCount, double closestEnemyDistance)
+                                      int frFriendlyHitPoints, int frFriendlyCount, int frEnemyHitPoints, int frEnemyCount, double closestEnemyDistance, double weakestEnemyDistance)
         {
             this.m_unitHitPoints = hitPoints;
             this.m_unitInitialHitPoints = initialHitPoints;
@@ -241,6 +260,7 @@ namespace NeuralNetTraining
             this.m_farRangeEnemyHitPoints = frEnemyHitPoints;
             this.m_farRangeEnemyCount = frEnemyCount;
             this.m_closestEnemyDistance = closestEnemyDistance;
+            this.m_weakestEnemyDistance = weakestEnemyDistance;
             this.m_isCompleted = true;
             this.m_frameOfCompletion = Game.FrameCount;
         }
@@ -266,7 +286,9 @@ namespace NeuralNetTraining
                 m_farRangeFriendlyCount / m_overAllInitialFriendlyCount,
                 m_farRangeEnemyHitPoints / m_overAllInitialEnemyHitPoints,
                 m_farRangeEnemyCount / m_overAllInitialEnemyCount,
-                m_closestEnemyDistance / m_distanceOperator
+                m_closestEnemyDistance / m_distanceOperator,
+                m_weakestEnemyHitPoints / m_unitInitialHitPoints,
+                m_weakestEnemyDistance / m_distanceOperator
             };
         }
         #endregion
