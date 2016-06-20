@@ -14,7 +14,7 @@ namespace NeuralNetTraining
         #region Member Fields
         // Match info
         private static int m_matchNumber = 0;
-        private static bool m_trainingMode = true;
+        private static bool m_trainingMode = false;
 
         // To be initialized
         private SquadSupervisor m_squadSupervisor;
@@ -24,6 +24,7 @@ namespace NeuralNetTraining
         // Handshake before training start
         private bool m_receivedHandshake = false;
         private bool m_sentHandshake = false;
+        private const int m_handShakeFrameTime = 10;
         private string m_handshakeMessage = "Commencing Match Procedure! Training Mode: ";
         #endregion
 
@@ -90,7 +91,7 @@ namespace NeuralNetTraining
             }
 
             // initialize a handshake test to check if both game instances are ready
-            if(Game.FrameCount == 10)
+            if(Game.FrameCount == m_handShakeFrameTime)
             {
                 Game.SendText(m_handshakeMessage + m_trainingMode.ToString()); // trigger handshake
                 m_sentHandshake = true;
