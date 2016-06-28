@@ -36,7 +36,7 @@ namespace NeuralNetTraining
         private bool m_requestDecision = true;
         private CombatUnitState m_currentState = CombatUnitState.SquadState;
         private bool m_stateTransition = true;
-        private const int m_outputActionsCount = 3;
+        private const int m_outputActionsCount = 2;
 
         // Information gathering
         private int m_closeRangeRadius;

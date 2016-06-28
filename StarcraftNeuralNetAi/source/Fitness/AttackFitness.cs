@@ -12,9 +12,9 @@ namespace NeuralNetTraining
     {
         #region Member
         private const double m_hitWeight = 0.85;
-        private const double m_killWeight = 0.6;
-        private const double m_complimentMovementWeight = 1.3;
-        private const double m_blameMovementWeight = 0.6;
+        private const double m_killWeight = 0.5;
+        private const double m_complimentMovementWeight = 1.5;
+        private const double m_blameMovementWeight = 0.8;
         #endregion
 
         #region Constructor
@@ -63,7 +63,7 @@ namespace NeuralNetTraining
             {
                 desiredMovementAdjustment = m_complimentMovementWeight;
             }
-            else if(desiredOutputActionAdjustment >= 1.15)
+            else if(desiredOutputActionAdjustment >= 1.2)
             {
                 desiredMovementAdjustment = m_blameMovementWeight;
             }
