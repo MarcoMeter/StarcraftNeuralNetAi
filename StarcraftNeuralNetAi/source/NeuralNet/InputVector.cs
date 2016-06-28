@@ -27,6 +27,7 @@ namespace NeuralNetTraining
         private double m_farRangeEnemyHitPoints;
         private double m_farRangeEnemyCount;
         private double m_closestEnemyDistance;
+        private double m_cloestsEnemyHitPoints;
         private double m_weakestEnemyDistance;
 
         // Information used for normalization (overall is known by SquadSupervisor)
@@ -235,7 +236,7 @@ namespace NeuralNetTraining
         /// <param name="frEnemyCount">number of all enemy units in far range</param>
         /// <param name="closestEnemyDistance"></param>
         public void CompleteInputData(int hitPoints, int initialHitPoints, int crFriendlyHitPoints, int crFriendlyCount, int crEnemyHitPoints, int crEnemyCount,
-                                      int frFriendlyHitPoints, int frFriendlyCount, int frEnemyHitPoints, int frEnemyCount, double closestEnemyDistance, double weakestEnemyDistance)
+                                      int frFriendlyHitPoints, int frFriendlyCount, int frEnemyHitPoints, int frEnemyCount, double closestEnemyDistance, double closestEnemyHitPoints, double weakestEnemyDistance)
         {
             this.m_unitHitPoints = hitPoints;
             this.m_unitInitialHitPoints = initialHitPoints;
@@ -248,6 +249,7 @@ namespace NeuralNetTraining
             this.m_farRangeEnemyHitPoints = frEnemyHitPoints;
             this.m_farRangeEnemyCount = frEnemyCount;
             this.m_closestEnemyDistance = closestEnemyDistance;
+            this.m_cloestsEnemyHitPoints = closestEnemyHitPoints;
             this.m_weakestEnemyDistance = weakestEnemyDistance;
             this.m_isCompleted = true;
             this.m_frameOfCompletion = Game.FrameCount;
@@ -275,6 +277,7 @@ namespace NeuralNetTraining
                 m_farRangeEnemyHitPoints / m_overAllInitialEnemyHitPoints,
                 m_farRangeEnemyCount / m_overAllInitialEnemyCount,
                 m_closestEnemyDistance / m_distanceOperator,
+                m_cloestsEnemyHitPoints / m_unitInitialHitPoints,
                 m_weakestEnemyHitPoints / m_unitInitialHitPoints,
                 m_weakestEnemyDistance / m_distanceOperator
             };
