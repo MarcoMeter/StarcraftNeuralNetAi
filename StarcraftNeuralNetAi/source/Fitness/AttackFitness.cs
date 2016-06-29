@@ -11,10 +11,10 @@ namespace NeuralNetTraining
     public class AttackFitness : FitnessMeasure
     {
         #region Member
-        private const double m_hitWeight = 0.85;
+        private const double m_hitWeight = 0.825;
         private const double m_killWeight = 0.5;
-        private const double m_complimentMovementWeight = 1.5;
-        private const double m_blameMovementWeight = 0.8;
+        private const double m_complimentMovementWeight = 1.65;
+        private const double m_blameMovementWeight = 0.85;
         #endregion
 
         #region Constructor
