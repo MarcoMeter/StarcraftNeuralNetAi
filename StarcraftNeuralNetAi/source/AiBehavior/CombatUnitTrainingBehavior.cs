@@ -270,15 +270,14 @@ namespace NeuralNetTraining
                 {
                     case CombatUnitState.AttackClosest:
                         m_currentTarget = m_squadSupervisor.GetClosestEnemyUnit(this);
+                        SmartAttackMove(m_currentTarget.Position);
                         break;
                     case CombatUnitState.AttackWeakest:
                         m_currentTarget = m_squadSupervisor.GetWeakestEnemyUnit();
+                        SmartAttack(m_currentTarget);
                         break;
                 }
             }
-
-            // Issue the attack
-            SmartAttack(m_currentTarget);
 
             // Wait for the beginning of the attack animation, this may include getting in weapon range and waiting for the cooldown to be done
             if (m_unit.IsAttackFrame && !m_attackAnimProcess)
@@ -390,6 +389,30 @@ namespace NeuralNetTraining
             }
 
             m_unit.Attack(target, false);
+        }
+
+        /// <summary>
+        /// Commands unit to move towards a position while attacking the closest units on the way.
+        /// </summary>
+        /// <param name="targetPosition">Position of the target.</param>
+        private void SmartAttackMove(Position targetPosition)
+        {
+            // return, if the target is null
+            if (targetPosition == null)
+            {
+                return;
+            }
+
+            // Draw attack line
+            Game.DrawLineMap(m_unit.Position.X, m_unit.Position.Y, targetPosition.X, targetPosition.Y, Color.Yellow);
+
+            // check if the unit is already attacking the target position, so that the same command won't be issued over and over again
+            if (m_unit.LastCommand.Type == UnitCommandType.AttackMove && m_unit.LastCommand.TargetPosition == targetPosition)
+            {
+                return;
+            }
+
+            m_unit.Attack(targetPosition, false);
         }
 
         /// <summary>
