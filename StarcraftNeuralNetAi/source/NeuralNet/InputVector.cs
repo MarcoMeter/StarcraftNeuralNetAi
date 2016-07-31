@@ -293,25 +293,6 @@ namespace NeuralNetTraining
                 m_underAttack
             };
         }
-
-        /// <summary>
-        /// Input for the manually hand crafted ANN.
-        /// </summary>
-        /// <returns>Returns normalized data of the simplified input vector.</returns>
-        public double[] GetSimplifiedNormalizedData()
-        {
-            return new double[]
-            {
-                m_overAllEnemyHitPoints / m_overAllInitialEnemyHitPoints,
-                m_overAllEnemyCount / m_overAllInitialEnemyCount,
-                m_overAllFriendlyHitPoints / m_overAllInitialFriendlyHitPoints,
-                m_overAllFriendlyCount / m_overAllInitialFriendlyCount,
-                m_unitHitPoints / m_unitInitialHitPoints,
-            };
-        }
-        #endregion
-
-        #region Local Functions
         #endregion
     }
 }

@@ -1,13 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Drawing;
-using BroodWar.Api;
-using BroodWar.Api.Enum;
-using System.Collections.Generic;
-using NeuralNetTraining.Utility;
+﻿using BroodWar.Api;
 
 namespace NeuralNetTraining
 {
+    /// <summary>
+    /// Each EnemyBehavior object is related to an enemy combat unit. It adds more logic and properties to an enemy unit.
+    /// For now it helps to determine the alive state of that particular unit.
+    /// </summary>
     public class EnemyBehavior
     {
         #region Members Fields
@@ -75,9 +73,6 @@ namespace NeuralNetTraining
         }
         #endregion
 
-        #region Public Functions
-        #endregion
-
         #region Behavior Logic
         /// <summary>
         /// OnFrame is triggered each frame by the SquadSupervisor for further logic.
@@ -85,9 +80,6 @@ namespace NeuralNetTraining
         public void OnFrame()
         {
         }
-        #endregion
-
-        #region Local Functions
         #endregion
     }
 }

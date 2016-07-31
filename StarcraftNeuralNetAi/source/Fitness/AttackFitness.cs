@@ -8,6 +8,9 @@ using System.Text;
 
 namespace NeuralNetTraining
 {
+    /// <summary>
+    /// The AttackFitness measures the fitness of attack actions.
+    /// </summary>
     public class AttackFitness : FitnessMeasure
     {
         #region Member
@@ -56,9 +59,11 @@ namespace NeuralNetTraining
             }
 
             // Step #2: Compute the desired adjustments for the output vector
+            // adjustment for the attack action
             double desiredOutputActionAdjustment = 1 + (unitSituationRatio - enemySituationRatio);
             double desiredMovementAdjustment = 1;
 
+            // adjustment for moving back
             if(unitSituationRatio <= 0.5) // The closer the units gets to death, then more likely using the MoveBack action should get increased.
             {
                 desiredMovementAdjustment = m_complimentMovementWeight;

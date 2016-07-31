@@ -6,7 +6,7 @@ using Encog.Persist;
 namespace NeuralNetTraining.Utility
 {
     /// <summary>
-    /// The PersistenceUtil takes care of saving files such as log files and artificial neural network files. It also loads the last trained neural net on request.
+    /// The PersistenceUtil takes care of saving log files and artificial neural network files. It also loads the last trained neural net on request.
     /// </summary>
     public class PersistenceUtil
     {

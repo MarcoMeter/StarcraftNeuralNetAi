@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
-using BroodWar;
 using BroodWar.Api;
-using BroodWar.Api.Enum;
 using System.Linq;
-using NeuralNetTraining.Utility;
 
 namespace NeuralNetTraining
 {
@@ -258,7 +255,7 @@ namespace NeuralNetTraining
         /// <summary>
         /// This function collects the global input information for the neural net.
         /// </summary>
-        /// <returns>An incomplete InputInformation, which only consists of global input information, is returned.</returns>
+        /// <returns>Returns an incomplete InputInformation, which only consists of global input information, is returned.</returns>
         private void GatherRawInputData()
         {
             int enemyHP = 0;

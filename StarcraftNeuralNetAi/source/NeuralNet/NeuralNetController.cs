@@ -77,7 +77,7 @@ namespace NeuralNetTraining
             {
                 this.m_neuralNet = new BasicNetwork();
                 this.m_neuralNet.AddLayer(new BasicLayer(null, true, 18)); // input layer
-                this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 55)); // #1 hidden layer
+                this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 28)); // #1 hidden layer
                 this.m_neuralNet.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 3)); // output layer
                 this.m_neuralNet.Structure.FinalizeStructure();
                 this.m_neuralNet.Reset(); // initializes the weights of the neural net
@@ -117,9 +117,6 @@ namespace NeuralNetTraining
                 PersistenceUtil.SaveNeuralNet(m_neuralNet);
             }
         }
-        #endregion
-
-        #region Local Functions
         #endregion
     }
 }

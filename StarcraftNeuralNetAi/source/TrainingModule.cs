@@ -1,7 +1,6 @@
 ﻿using BroodWar;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
-using NeuralNetTraining.Utility;
 
 namespace NeuralNetTraining
 {
@@ -41,7 +40,7 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// Read-only. Stated by the TrainingModule, if the match is in training mode or execution mode.
+        /// Read-only. Stated by the TrainingModule, if the match is in training or execution mode.
         /// </summary>
         public static bool TrainingMode
         {
@@ -54,18 +53,18 @@ namespace NeuralNetTraining
 
         #region BWAPI Events
         /// <summary>
-        /// Everything that needs to be done before the game starts, should be done inside OnStart(). Especially all members should be initialized in here due to automated matches.
+        /// Everything that needs to be done before the game starts, should be done inside OnStart(). Especially all members should be initialized in here due to automated matches - making it "match save".
         /// </summary>
         public override void OnStart()
         {
             m_matchNumber++;
             // Config match
             Game.EnableFlag(Flag.CompleteMapInformation); // this flag makes the information about the enemy units avaible
-            Game.EnableFlag(Flag.UserInput); // this flag allows the user to take action
+            Game.EnableFlag(Flag.UserInput); // this flag allows the user to take actions, e.g. triggering the Stim Pack ability is usefull for testing
 
             if (m_trainingMode)
             {
-                Game.SetLocalSpeed(0); // fastest game speed, maybe adding frame skipping increases game speed
+                Game.SetLocalSpeed(0); // fastest game speed, modifying the frameSkip could accelerate the game as well
             }
 
             // Initialize Member
@@ -106,7 +105,7 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// OnUnitDestroy is triggered if any unit dies or gets destroyed. Keep in mind, destroyed units can still be referenced.
+        /// OnUnitDestroy is triggered if any unit dies or gets destroyed. Keep in mind, destroyed units can still be referenced, because they stay in scope for the whole match.
         /// </summary>
         /// <param name="unit">Is triggered on any kind of unit which is being destroyed.</param>
         public override void OnUnitDestroy(Unit unit)
@@ -183,9 +182,6 @@ namespace NeuralNetTraining
                 Game.DrawTextScreen(5, 30, "Execution Mode");
             }
         }
-        #endregion
-
-        #region Public Functions
         #endregion
     }
 }

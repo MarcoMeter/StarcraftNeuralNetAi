@@ -1,15 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Drawing;
+﻿using System.Drawing;
 using BroodWar.Api;
 using BroodWar.Api.Enum;
 using Encog.Neural.Networks;
-using Encog.Persist;
 using NeuralNetTraining.Utility;
 using Encog.ML.Data.Basic;
 using Encog.ML.Data;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace NeuralNetTraining
 {
@@ -74,7 +70,7 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// Read-only id of the unit.
+        /// Read-only id of the unit. It's usefull for debugging purposes.
         /// </summary>
         public int Id
         {
@@ -107,6 +103,7 @@ namespace NeuralNetTraining
         /// </summary>
         /// <param name="unit">The individual combat unit which needs to be paired with this behavior.</param>
         /// <param name="supervisor">The SquadSupervisor which controlls the combat unit.</param>
+        /// <param name="id">Assign unique Id</param>
         public CombatUnitTrainingBehavior(Unit unit, SquadSupervisor supervisor, int id)
         {
             this.m_unit = unit;
@@ -270,14 +267,16 @@ namespace NeuralNetTraining
                 {
                     case CombatUnitState.AttackClosest:
                         m_currentTarget = m_squadSupervisor.GetClosestEnemyUnit(this);
-                        SmartAttackMove(m_currentTarget.Position);
+                        //SmartAttackMove((m_unit.Position - m_currentTarget.Position) * 2); // SmartAttackMove doesn't work reliably yet
                         break;
                     case CombatUnitState.AttackWeakest:
                         m_currentTarget = m_squadSupervisor.GetWeakestEnemyUnit();
-                        SmartAttack(m_currentTarget);
+                        //SmartAttack(m_currentTarget);
                         break;
                 }
             }
+
+            SmartAttack(m_currentTarget);
 
             // Wait for the beginning of the attack animation, this may include getting in weapon range and waiting for the cooldown to be done
             if (m_unit.IsAttackFrame && !m_attackAnimProcess)
@@ -392,7 +391,7 @@ namespace NeuralNetTraining
         }
 
         /// <summary>
-        /// Commands unit to move towards a position while attacking the closest units on the way.
+        /// Commands unit to move towards a position while attacking the closest units on the way. This function doesn't work reliably yet.
         /// </summary>
         /// <param name="targetPosition">Position of the target.</param>
         private void SmartAttackMove(Position targetPosition)

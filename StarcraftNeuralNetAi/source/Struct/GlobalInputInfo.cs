@@ -5,6 +5,9 @@ using System.Text;
 
 namespace NeuralNetTraining
 {
+    /// <summary>
+    /// The GlobalInputInfo stores information of the global game state known by the SquadSupervisor.
+    /// </summary>
     public struct GlobalInputInfo
     {
         public double overAllFriendlyHitPoints;

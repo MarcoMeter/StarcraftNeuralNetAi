@@ -1,13 +1,10 @@
 ﻿using Encog.ML.Data;
-using Encog.ML.Data.Basic;
-using NeuralNetTraining.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NeuralNetTraining
 {
+    /// <summary>
+    /// The FitnessMeasure provides an interface to measure the fitness of executed actions (such as attacks and movement) based on the immediate outcome of the underlying situation.
+    /// </summary>
     abstract public class FitnessMeasure
     {
         #region Member Fields
@@ -15,9 +12,6 @@ namespace NeuralNetTraining
         protected CombatUnitState m_randomOutput;
         protected IMLData m_computedOutput;
         protected NeuralNetController m_neuralNetController;
-        #endregion
-
-        #region Member Properties
         #endregion
 
         #region Constructor
@@ -47,9 +41,6 @@ namespace NeuralNetTraining
         /// <param name="hit">Did an attack hit its target?</param>
         /// <param name="killed">Did the hit kill its target?</param>
         abstract public void ComputeDataPair(InputVector finalInputVector, bool hit, bool killed);
-        #endregion
-
-        #region Local Functions
         #endregion
     }
 }

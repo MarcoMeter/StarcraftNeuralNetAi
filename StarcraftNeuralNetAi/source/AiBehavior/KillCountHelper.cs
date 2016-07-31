@@ -1,9 +1,11 @@
 ﻿using BroodWar.Api;
-using NeuralNetTraining.Utility;
-using System.Threading;
 
 namespace NeuralNetTraining
 {
+    /// <summary>
+    /// The KillCountHelper is supposed to support figuring out if the combat unit killed its target or just harmed it.
+    /// With some delay, the KillCountHelper triggers the process of computing the training data pair.
+    /// </summary>
     public class KillCountHelper
     {
         #region Member Fields
@@ -15,6 +17,9 @@ namespace NeuralNetTraining
         #endregion
 
         #region Member Properties
+        /// <summary>
+        /// Read-only rest of the observed frame duration.
+        /// </summary>
         public int FrameDuration
         {
             get
@@ -25,6 +30,13 @@ namespace NeuralNetTraining
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// Instantiates a KillCountHelper to observe the unit's kill count for indicating the attack's feedback.
+        /// </summary>
+        /// <param name="unit">Requesting unit</param>
+        /// <param name="fitnessMeasure">The complete FitnessMeasure featuring initial input information</param>
+        /// <param name="inputVector">The input vector featuring the final input information</param>
+        /// <param name="frameDuration">The duration to observe the unit's kill count</param>
         public KillCountHelper(Unit unit, AttackFitness fitnessMeasure, InputVector inputVector, int frameDuration)
         {
             this.m_unit = unit;
